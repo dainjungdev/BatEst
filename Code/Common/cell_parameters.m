@@ -57,20 +57,27 @@ OCP_filename = {'Raj2020_NCA.parquet','Raj2020_Graphite.parquet'};
 % entry to 'cycle_step' equal to the last Step_Index in the sequence.
 
 % Create empty properties
-cycle_step = [];
-DataType = '';
+% cycle_step = [0;6];
+% DataType = 'CCCV charge';
 
 % Select subset of data
-% if j==1
-%     cycle_step = [0;10];
-%     DataType = 'Pseudo-OCV charge';
-% elseif j==2
-%     cycle_step = [0;5];
-%     DataType = 'Relaxation';
-% elseif j>2
-%     cycle_step = [0;6];
-%     DataType = 'CCCV charge';
-% end
+if j==1
+    % Identify the electrode stoichiometry parameters (Qn, nu and miu) from 
+    % the Pseudo-OCV charge data. (Cycle_Index==0 and Step_Index==10)
+    cycle_step = [0;10];
+    DataType = 'Pseudo-OCV charge';
+elseif j==2
+    % Identify the diffusion time constant (tau_ref) from the relaxation 
+    % step from the Relaxation data. (Cycle_Index==0 and Step_Index==5)
+    cycle_step = [0;5];
+    DataType = 'Relaxation';
+elseif j>2
+    % Identify the dynamic parameters (b, In_ref and Rf, but not Ip_ref 
+    % because it is unidentifiable from this dataset) from the CCCV charge 
+    % data. (Cycle_Index==0 and Step_Index==6)
+    cycle_step = [0;6];
+    DataType = 'CCCV charge';
+end
 
 
 %% Compile all parameters into the params structure

@@ -33,6 +33,7 @@ if length(OCP_filename)==1
 elseif length(OCP_filename)==2
     
     % Define the OCV as the difference between the electrode OCPs
+    % UpFun = cathode potential, Unfun = anode potential
     [UnFun, UpFun] = electrode_potentials(params);
     OCV =  @(soc,nu,miu) UpFun(soc,nu,miu)-UnFun(soc);
     
