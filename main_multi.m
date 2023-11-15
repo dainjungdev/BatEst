@@ -3,7 +3,7 @@ function [out, params] = main_multi(Dataset, out, input_params)
 % The inputs and outputs are optional.
 
 %% 0. Initial Step
-% close all;
+close all;
 reset_path;
 
 
