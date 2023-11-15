@@ -53,15 +53,6 @@ Once you have completed this example, reset the parameters that you changed, for
 
 Next, let's demonstrate the second main functionality of the code: parameter estimation. The code contains a number of different methods for estimating unknown parameters from data.
 
-
-## Step 3. Comparison between model and data
-
-If you would like to load your own data, please first read the `DATA_PREP_GUIDE` on how to prepare your data. Alternatively, an example dataset made available by T. Raj and D. A. Howey [2] is stored within the repository. Load this dataset with the command `Dataset = import_parquet('Data/Examples/Raj2020_Cycling.parquet');`.
-
-Reference [2]: T. Raj, Path Dependent Battery Degradation Dataset Part 1, University of Oxford (2020). doi.org/10.1002/batt.202000160.
-
-To run a comparison, we need to change the simulation settings. Enter `open main_one` and change the `Target` from `Simulate` to `Compare`. We can also change which model we are using here. Change the `ModelName` from `EHMT` to `ROCV`, which corresponds to an equivalent circuit model a resistor in series with an OCV source.
-
 Now run a comparison of the data to the default simulation of the equivalent circuit model by entering `main_one(Dataset);` in the command window - note that it is now necessary to pass the `Dataset` as an input.
 
 We can see that the default simulation does not compare very well to the data. This motivates our use of parameter estimation to obtain a better fit.
@@ -70,6 +61,15 @@ We can see that the default simulation does not compare very well to the data. T
 ## Step 4. Estimation of 2 of the parameters in the ROCV model
 
 Our equivalent circuit model `ROCV` has 2 parameters, namely the capacity `Qn` and the series resistance `Rs`, as well as 2 optional parameters: the negative/positive electrode capacity ratio (`nu`) and cyclable lithium/positive electrode capacity ratio (`miu`) if using separate electrode open-circuit potentials (OCPs) rather than an OCV function - this choice is made in [cell_parameters.m](Code/Common/cell_parameters.m).
+
+
+## Step 3. Comparison between model and data
+
+If you would like to load your own data, please first read the `DATA_PREP_GUIDE` on how to prepare your data. Alternatively, an example dataset made available by T. Raj and D. A. Howey [2] is stored within the repository. Load this dataset with the command `Dataset = import_parquet('Data/Examples/Raj2020_Cycling.parquet');`.
+
+Reference [2]: T. Raj, Path Dependent Battery Degradation Dataset Part 1, University of Oxford (2020). doi.org/10.1002/batt.202000160.
+
+To run a comparison, we need to change the simulation settings. Enter `open main_one` and change the `Target` from `Simulate` to `Compare`. We can also change which model we are using here. Change the `ModelName` from `EHMT` to `ROCV`, which corresponds to an equivalent circuit model a resistor in series with an OCV source.
 
 In the file `main_one.m`, let us now change the `Target` to `Parameter`, i.e. we would like to estimate the parameters as well as simulate and plot the data. For this `Target`, we also need to choose the `Estimator`. Let's keep this set to `PEM`, which stands for prediction error minimisation. This method is provided as a built-in function for MATLAB and is able to estimate initial states as well as constant parameters.
 

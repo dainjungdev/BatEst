@@ -5,7 +5,7 @@ function params = compute_RMSE(Target,params,true_sol,pred_sol)
 verbose = params.verbose;
 
 % Compute RMSE
-if any(strcmp(Target,{'Compare','Parameter'}))
+if any(strcmp(Target,{'Simulate','Compare','Parameter'}))
     [RMSE_mV, RMSE_Ts] = deal(0);
     if length(true_sol.tsol)==length(pred_sol.tsol)
         RMSE_mV = sqrt(sum((true_sol.ysol(:,1)-pred_sol.ysol(:,1)).^2) ...

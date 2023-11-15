@@ -65,7 +65,7 @@ if j==1
     % Identify the electrode stoichiometry parameters (Qn, nu and miu) from 
     % the Pseudo-OCV charge data. (Cycle_Index==0 and Step_Index==10)
     cycle_step = [0;10];
-    DataType = 'Pseudo-OCV charge';
+    DataType = 'Pseudo-OCV charge'; % slow enough -> OCV
 elseif j==2
     % Identify the diffusion time constant (tau_ref) from the relaxation 
     % step from the Relaxation data. (Cycle_Index==0 and Step_Index==5)

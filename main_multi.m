@@ -3,7 +3,7 @@ function [out, params] = main_multi(Dataset, out, input_params)
 % The inputs and outputs are optional.
 
 %% 0. Initial Step
-close all;
+% close all;
 reset_path;
 
 
@@ -43,6 +43,7 @@ for cell_num = cell_nums
     filenames = index.File_Name(file_indices);
     subfolders = index.Folder_Name(file_indices);
     
+
     % Loop through each file for the current cell
     for file_idx = 1:length(filenames)
         
@@ -64,7 +65,7 @@ for cell_num = cell_nums
             % Initialise settings based on repetition number
             if rep_num == 1
                 ModelName = 'OCV';  % For pseudo-OCV measurements
-                Target = 'Compare';
+                Target = 'Parameter';
                 Estimator = 'PEM';
                 Dataset = import_parquet([subfolders{file_idx} '/' filenames{file_idx}]);
             elseif rep_num == 2
@@ -108,7 +109,7 @@ for cell_num = cell_nums
             
             % Convert and save the parameters in a table
             out = tabulate_output(params, out);
-            
+            save('params_EHM', "params")
             % Save output and current figure (true = overwrite by default)
             save_output(out, ['Data/out_' ModelName '_' num2str(cell_num) '_' num2str(file_idx)], true);
             % save_plot(gcf, ['Data/plot_' ModelName '_' num2str(cell_num) '_' num2str(file_idx)], true);
