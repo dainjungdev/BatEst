@@ -58,14 +58,14 @@ function RMSE_values = sensitivity_analysis(params)
             
             % Run simulation using updated parameters
             [pred_sol, params] = step3(Target, Model, params, 3, est_sol);
-    
+ 
+            params = step4('Compare', params, baseline_sol, true_sol);
             % Compute RMSE
             % Compute difference between data and simulation
-            params = compute_RMSE(Target, params, baseline_sol, true_sol);
             % Unpack RMSE Values
             RMSE_values(i, j) = params.RMSE_mV;
             disp(params.RMSE_mV)
-
+ 
             % RMSE_values(i, j) = return_RMSE('Compare', varied_params, baseline_sol, pred_sol);
         end
     end
@@ -73,8 +73,14 @@ function RMSE_values = sensitivity_analysis(params)
     % Create a table with delta values and corresponding RMSE
     delta_str = arrayfun(@(d) sprintf('Delta=%.2f', d), delta, 'UniformOutput', false);
     sensitivity_table = array2table(RMSE_values, 'RowNames', param_names_to_vary, 'VariableNames', delta_str);
-    
-    plot(delta, )
+
+    figure; hold on;
+    ylim([0,10]);
+    for i = 1:length(param_names_to_vary)
+    plot(delta, RMSE_values(i,:));
+    end
+
+
     % solution structure
     % compare true_sol with real data
 
