@@ -1,15 +1,19 @@
 function RMSE_matrix = sensitivity_real_data_2d(input_params)
-% Sensitivity analysis by comparing with real data
+% Sensitivity analysis by comparing with real data, combinations of two elements
 
 close all;
 reset_path;
 
-% Load the dataset
+startTime = datetime('now');
+fprintf('\nComputation started at %s\n', startTime);
+
+% Load dataset
 Dataset = parquetread('Data/Examples/Raj2020_Tests.parquet');
 
-% Define baseline parameters from input
+% Define baseline parameters
 baseline_params = input_params;
 baseline_params.verbose = false;
+baseline_params.plot_results = false;
 
 % Model configuration
 ModelName = 'EHM';
@@ -22,107 +26,98 @@ addpath(genpath(strcat('./Code/Methods/', Estimator)));
 [Model, baseline_params] = step0(ModelName, 3, baseline_params);
 baseline_sol = step1(Target, Model, baseline_params, 3, Dataset);
 
-% % Parameters to vary and their range
-% param_names_to_vary = {'In', 'Ip', 'Q', 'Rf', 'tau', 'nu', 'miu', 'alph', 'b'};
-% min_value = -0.15;
-% max_value = 0.15;
-% num_values = 50;
-% delta = linspace(min_value, max_value, num_values);
-
-% Define ranges for two parameters
+% Define parameters to vary
 param_names_to_vary = {'Q', 'nu', 'miu'};
-min1 = -0.15; max1 = 0.15; num_values1 = 5;
-min2 = -0.05; max2 = 0.05; num_values2 = 5;
-delta1 = linspace(min1, max1, num_values1);
-delta2 = linspace(min2, max2, num_values2);
 
-% % Initialize RMSE results array
-% RMSE_values = zeros(length(param_names_to_vary), length(delta));
+% Get the indices of all possible combinations of two different elements
+comb_indices = nchoosek(1:length(param_names_to_vary), 2);
+num_combinations = size(comb_indices, 1);
 
-% Initialize RMSE matrix
-RMSE_matrix = zeros(length(param_names_to_vary), length(param_names_to_vary), length(delta1), length(delta2));
+% Define the range of delta
+min_value = -0.15;
+max_value = 0.15;
+num_values = 20;
+delta = linspace(min_value, max_value, num_values);
 
-% % Loop over each parameter and delta
-% for i = 1:length(param_names_to_vary)
-%     for j = 1:length(delta)
-%         % Modify the parameter value
-%         varied_params = baseline_params;
-%         varied_params.(param_names_to_vary{i}) = baseline_params.(param_names_to_vary{i}) * (1 + delta(j));
-%         varied_params.verbose = false;
-%         varied_params.plot_results = false;
-% 
-%         % Run simulation with varied parameters
-%         [Model, varied_params] = step0(ModelName, 3, varied_params);
-%         [true_sol, varied_params] = step1('Simulate', Model, varied_params, 3, Dataset);
-% 
-%         % Compare with baseline to compute RMSE
-%         varied_params = step4('Compare', varied_params, baseline_sol, true_sol);
-%         RMSE_values(i, j) = varied_params.RMSE_mV;
-%     end
-% end
+% Initialise RMSE matrix
+RMSE_matrix = zeros(num_combinations, num_values, num_values);
 
 % Loop over each combination of parameters
-for ii = 1:length(param_names_to_vary)
-    for jj = ii:length(param_names_to_vary)
-        for i = 1:length(delta1)
-            for j = 1:length(delta2)
-                % Set the parameter values
-                param1 = param_names_to_vary{ii};
-                param2 = param_names_to_vary{jj};
+for k = 1:num_combinations
+    param1 = param_names_to_vary{comb_indices(k, 1)};
+    param2 = param_names_to_vary{comb_indices(k, 2)};
 
-                varied_params = baseline_params;
-                varied_params.verbose = false;
-                varied_params.plot_results = false;
+    for i = 1:num_values
+        for j = 1:num_values
+            varied_params = baseline_params;
+            varied_params.verbose = false;
+            varied_params.plot_results = false;
 
-                varied_params.(param1) = baseline_params.(param1) * (1 + delta1(i));
-                varied_params.(param2) = baseline_params.(param2) * (1 + delta2(j));
-
-                % Run the model simulation
-                [Model, varied_params] = step0(ModelName, 3, varied_params);
-                [true_sol, varied_params] = step1('Simulate', Model, varied_params, 3, Dataset);
-                varied_params = step4('Compare', varied_params, baseline_sol, true_sol);
-
-                % Store RMSE
-                RMSE_matrix(ii, jj, i, j) = varied_params.RMSE_mV;
-            end
+            varied_params.(param1) = baseline_params.(param1) * (1 + delta(i));
+            varied_params.(param2) = baseline_params.(param2) * (1 + delta(j));
+            
+            % Run model simulation
+            [Model, varied_params] = step0(ModelName, 3, varied_params);
+            [true_sol, varied_params] = step1('Simulate', Model, varied_params, 3, Dataset);
+            varied_params = step4('Compare', varied_params, baseline_sol, true_sol);
+        
+            % Store RMSE
+            RMSE_matrix(k, i, j) = varied_params.RMSE_mV;
         end
-
-        % Generate a meshgrid for the parameter ranges
-        [Param1Grid, Param2Grid] = meshgrid(delta1, delta2);
-        
-        % RMSE values for the current combination of parameters
-        CurrentRMSE = squeeze(RMSE_matrix(ii, jj, :, :));
-        
-        % Create the 3D surface plot
-        figure;
-        surf(Param1Grid, Param2Grid, CurrentRMSE');
-        shading interp; % Optional: to smooth the colors on the surface
-        colorbar;
-        xlabel(param_names_to_vary{ii});
-        ylabel(param_names_to_vary{jj});
-        zlabel('RMSE');
-        title('3D Surface of RMSE for Parameter Sensitivity');
-        
-        % Adjusting the view to match the example
-        view([-30 30]); % Adjust the view angle for better visibility
-        grid on;
-
-        % Optionally, you can set the grid style
-        set(gca, 'GridLineStyle', ':', 'GridColor', 'k', 'GridAlpha', 0.6); % Dotted grid lines
     end
 end
 
-% % Plotting the results
-% figure; hold on;
-% for i = 1:length(param_names_to_vary)
-%     plot(delta, RMSE_values(i, :), 'DisplayName', param_names_to_vary{i});
-% end
-% 
-% xlabel('Parameter Variation Delta');
-% ylabel('RMSE (mV)');
-% title('Sensitivity Analysis for EHM Parameters');
-% legend('show');
-% hold off;
+%% Plotting the results
+figure;
 
+% Calculate the number of subplots needed
+num_subplots_side = ceil(sqrt(num_combinations));
 
+for k = 1:num_combinations
+    param1 = param_names_to_vary{comb_indices(k, 1)};
+    param2 = param_names_to_vary{comb_indices(k, 2)};
+    
+    % Generate a meshgrid for the parameter variations
+    [Param1Grid, Param2Grid] = meshgrid(delta, delta);
+    
+    % RMSE values for the current combination
+    CurrentRMSE = squeeze(RMSE_matrix(k, :, :));
+    
+    % Find the minimum RMSE value and its corresponding indices
+    [minValue, minIndex] = min(CurrentRMSE(:));
+    [minRow, minCol] = ind2sub(size(CurrentRMSE), minIndex);
+    minParam1 = Param1Grid(minRow, minCol);
+    minParam2 = Param2Grid(minRow, minCol);
+    
+    % Create 3D surface plot with a grid for each combination
+    subplot(num_subplots_side, num_subplots_side, k);
+    surf(Param1Grid, Param2Grid, CurrentRMSE', 'EdgeColor', 'k');
+    colorbar; 
+    xlabel(param1);
+    ylabel(param2);
+    zlabel('RMSE');
+    title(sprintf('RMSE (%s vs %s)', param1, param2));
+    
+    view([-30 30]);
+    hold on;
+    grid on;
+    
+    % Highlight minimum RMSE value
+    scatter3(minParam1, minParam2, minValue, 'filled', 'o', 'MarkerEdgeColor', ...
+        'k', 'MarkerFaceColor', 'r', 'SizeData', 100);
+    deltaParam1 = delta(minRow);
+    deltaParam2 = delta(minCol);
+    text(minParam1, minParam2, minValue, sprintf('Min: %.3f\n%s: %.3f\n%s: %.3f', ...
+        minValue, param1, deltaParam1, param2, deltaParam2), 'VerticalAlignment', ...
+        'bottom', 'HorizontalAlignment', 'right');
+    hold off;
+end
+
+endTime = datetime('now');
+duration = endTime - startTime;
+fprintf('\nComputation ended at %s\n', endTime);
+fprintf('Total duration: %s\n', duration);
+
+% Adjust layout
+set(gcf, 'Position', get(0, 'Screensize'));
 end
