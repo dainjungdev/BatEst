@@ -27,28 +27,28 @@ addpath(genpath(strcat('./Code/Methods/', Estimator)));
 baseline_sol = step1(Target, Model, baseline_params, 3, Dataset);
 
 % Define parameters to vary
-param_names_to_vary = {'Q', 'nu', 'miu'};
+varying_params = {'Q', 'nu', 'miu'};
 
 % Get the indices of all possible combinations of two different elements
-comb_indices = nchoosek(1:length(param_names_to_vary), 2);
+comb_indices = nchoosek(1:length(varying_params, 2));
 num_combinations = size(comb_indices, 1);
 
 % Define the range of delta
 min_value = -0.15;
 max_value = 0.15;
-num_values = 20;
-delta = linspace(min_value, max_value, num_values);
+num_delta = 20;
+delta = linspace(min_value, max_value, num_delta);
 
 % Initialise RMSE matrix
-RMSE_matrix = zeros(num_combinations, num_values, num_values);
+RMSE_matrix = zeros(num_combinations, num_delta, num_delta);
 
 % Loop over each combination of parameters
 for k = 1:num_combinations
-    param1 = param_names_to_vary{comb_indices(k, 1)};
-    param2 = param_names_to_vary{comb_indices(k, 2)};
+    param1 = varying_params{comb_indices(k, 1)};
+    param2 = varying_params{comb_indices(k, 2)};
 
-    for i = 1:num_values
-        for j = 1:num_values
+    for i = 1:num_delta
+        for j = 1:num_delta
             varied_params = baseline_params;
             varied_params.verbose = false;
             varied_params.plot_results = false;
@@ -74,8 +74,8 @@ figure;
 num_subplots_side = ceil(sqrt(num_combinations));
 
 for k = 1:num_combinations
-    param1 = param_names_to_vary{comb_indices(k, 1)};
-    param2 = param_names_to_vary{comb_indices(k, 2)};
+    param1 = varying_params{comb_indices(k, 1)};
+    param2 = varying_params{comb_indices(k, 2)};
     
     % Generate a meshgrid for the parameter variations
     [Param1Grid, Param2Grid] = meshgrid(delta, delta);
