@@ -2,11 +2,13 @@ function [out, params] = main_multi(Dataset,out,input_params)
 % This is the main script to run multiple iterations, try main_one.m first.
 % The inputs and outputs are optional.
 
-%% 0. Initial Step
 close all;
 reset_path;
 
-%% 1. Initialise optional variables
+startTime = datetime('now');
+fprintf('\nmain_multi started at %s\n', startTime);
+
+% Initialise optional variables
 % To create a Dataset use: Dataset = importParquet('XXX.csv');
 % Dataset = parquetread('Code/Common/Import/ExampleDataset.parquet');
 if ~exist('Dataset','var'), Dataset = []; end
@@ -16,11 +18,10 @@ if ~exist('out','var'), out = []; end
 
 % To pass the parameters from a previous estimation, use the input params.
 % To generate a parameters structure, use: params = load_output(out);
-% params = load_output(out);
+% input_params = load_output(out);
 if ~exist('input_params','var'), input_params = []; end
 
-
-%% 2. Iterations
+%% Iterations
 % Load index of measurement data to access multiple files
 index_name = 'Data/Examples/Test_Index.parquet';
 index = parquetread(index_name);
@@ -28,18 +29,17 @@ index = parquetread(index_name);
 % Set the cell number(s)
 cell_num = [3];
 for n = cell_num
-
-    % Reset the parameters for each cell
+    % Reset parameters for each cell
     params = input_params;
     
-    % Select files from the index
+    % Select files from index
     file_index = find(index.Cell_Number==n & index.Performance_Test);
     filenames = index.File_Name(file_index(:));
     subfolder = index.Folder_Name(file_index(:));
     for k = 1:length(filenames)
     
-        % % Reset the parameters for each test
-        % params = input_params;
+        % Reset the parameters for each test
+        params = input_params;
         
         % Set the section number(s) or number of repetitions
         rep_num = 1:3;
@@ -61,8 +61,7 @@ for n = cell_num
                 ModelName = 'EHM';
             end
 
-
-            %% Start
+            fprintf('\nRep_num = %d\n', j);
             fprintf('\nComputation started at %s\n', datetime("now"));
             
             % Add relevant paths
@@ -71,20 +70,20 @@ for n = cell_num
             addpath(genpath(strcat('./Code/Methods/',Estimator)));
             
             % Define dimensionless model
-            [Model, params] = step0(ModelName,j,params);
+            [Model, params] = step0(ModelName, j, params);
             Model.Noise = false; % true or false
-            
+
             % Load or generate data
-            [true_sol, params] = step1(Target,Model,params,j,Dataset);
+            [true_sol, params] = step1(Target, Model, params, j, Dataset);
             
             % Perform estimation and update parameter values
-            [est_sol,  params] = step2(Target,Model,params,j);
+            [est_sol,  params] = step2(Target, Model, params, j);
             
             % Run simulation using updated parameters
-            [pred_sol, params] = step3(Target,Model,params,j,est_sol);
+            [pred_sol, params] = step3(Target, Model, params, j, est_sol);
             
             % Compare prediction and data
-            params = step4(Target,params,true_sol,pred_sol);
+            params = step4(Target, params, true_sol, pred_sol);
 
 
             %% Save
@@ -92,16 +91,19 @@ for n = cell_num
             % can be re-generated using Simulate or Compare.
             
             % Convert and save the parameters in a table
-            out = tabulate_output(params,out);
-            
+            out = tabulate_output(params, out);
+
             % Save output and current figure (true = overwrite by default)
-            save_output(out,['Data/out_' ModelName '_' num2str(n) '_' num2str(k)],true);
+            save_output(out,['0_initial_results/out_' ModelName '_' num2str(n) '_' num2str(k)],true);
             % save_plot(gcf,['Data/plot_' ModelName '_' num2str(n) '_' num2str(k)],true);
-
-
         end
     end
 end
+
+endTime = datetime('now');
+duration = endTime - startTime;
+fprintf('\nComputation ended at %s\n', endTime);
+fprintf('Total duration: %s\n', duration);
 
 end
 
