@@ -27,18 +27,21 @@ addpath(genpath(strcat('./Code/Methods/', Estimator)));
 baseline_sol = step1(Target, Model, baseline_params, 3, Dataset);
 
 % Define parameters to vary
-varying_params = {'Q', 'nu', 'miu'};
+% varying_params = {'Q', 'tau', 'b', 'Ip', 'In', 'nu', 'miu', 'Rf'};
+varying_params = {'Q', 'In', 'nu', 'miu', 'Rf'};
 
 % Get the indices of all possible combinations of two different elements
-comb_indices = nchoosek(1:length(varying_params, 2));
+comb_indices = nchoosek(1:length(varying_params), 2);
 num_combinations = size(comb_indices, 1);
 
 % Define the range of delta
-min_value = -0.15;
-max_value = 0.15;
-num_delta = 20;
+min_value = -0.05;
+max_value = 0.05;
+num_delta = 21; % odd number
 delta = linspace(min_value, max_value, num_delta);
 
+
+%% Compute RMSE for each parameter
 % Initialise RMSE matrix
 RMSE_matrix = zeros(num_combinations, num_delta, num_delta);
 
@@ -49,6 +52,7 @@ for k = 1:num_combinations
 
     for i = 1:num_delta
         for j = 1:num_delta
+            % Modify the parameter value
             varied_params = baseline_params;
             varied_params.verbose = false;
             varied_params.plot_results = false;
@@ -67,11 +71,14 @@ for k = 1:num_combinations
     end
 end
 
+
+
 %% Plotting the results
 figure;
 
 % Calculate the number of subplots needed
-num_subplots_side = ceil(sqrt(num_combinations));
+num_subplots_x = ceil(sqrt(num_combinations));
+num_subplots_y = ceil(num_combinations/num_subplots_x);
 
 for k = 1:num_combinations
     param1 = varying_params{comb_indices(k, 1)};
@@ -86,11 +93,11 @@ for k = 1:num_combinations
     % Find the minimum RMSE value and its corresponding indices
     [minValue, minIndex] = min(CurrentRMSE(:));
     [minRow, minCol] = ind2sub(size(CurrentRMSE), minIndex);
-    minParam1 = Param1Grid(minRow, minCol);
-    minParam2 = Param2Grid(minRow, minCol);
-    
+    minParam1 = Param1Grid(minCol, minRow);
+    minParam2 = Param2Grid(minCol, minRow);
+
     % Create 3D surface plot with a grid for each combination
-    subplot(num_subplots_side, num_subplots_side, k);
+    subplot(num_subplots_x, num_subplots_y, k);
     surf(Param1Grid, Param2Grid, CurrentRMSE', 'EdgeColor', 'k');
     colorbar; 
     xlabel(param1);
@@ -107,17 +114,18 @@ for k = 1:num_combinations
         'k', 'MarkerFaceColor', 'r', 'SizeData', 100);
     deltaParam1 = delta(minRow);
     deltaParam2 = delta(minCol);
-    text(minParam1, minParam2, minValue, sprintf('Min: %.3f\n%s: %.3f\n%s: %.3f', ...
-        minValue, param1, deltaParam1, param2, deltaParam2), 'VerticalAlignment', ...
-        'bottom', 'HorizontalAlignment', 'right');
+    subtitle(sprintf('Min: %.3f, %s: %.3f, %s: %.3f', minValue, param1, deltaParam1, param2, deltaParam2))
     hold off;
 end
+
+% Adjust layout
+set(gcf, 'Position', get(0, 'Screensize'));
+
+% Save plot
+save_plot(gcf,['1_sensitivity_analysis/out/sensitivity_real_2d' num2str(min_value) '_' num2str(max_value) '_' num2str(num_delta)],true);
 
 endTime = datetime('now');
 duration = endTime - startTime;
 fprintf('\nComputation ended at %s\n', endTime);
 fprintf('Total duration: %s\n', duration);
-
-% Adjust layout
-set(gcf, 'Position', get(0, 'Screensize'));
 end

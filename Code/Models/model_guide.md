@@ -37,7 +37,7 @@
 - Parameters:
     - tau_ref: diffusion time constant
     - b: negative electrode surface/particle volume ratio(higher b=larger reaction surface)
-    - lp_ref: reference exchange currents for positive and negative electrodes
+    - Ip_ref: reference exchange currents for positive and negative electrodes
     - Rf: film resistance
 - Constants:
     - alph: charge transfer coefficients
