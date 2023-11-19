@@ -116,7 +116,7 @@ hold off;
 set(gcf, 'Position', get(0, 'Screensize'));
 
 % Save plot
-save_plot(gcf,['1_sensitivity_analysis/out_sensitivity_real_data_' num2str(min_value) '_' num2str(max_value) '_' num2str(num_delta)],true);
+save_plot(gcf,['1_sensitivity_analysis/out/sensitivity_real_' num2str(min_value) '_' num2str(max_value) '_' num2str(num_delta)],true);
 endTime = datetime('now');
 duration = endTime - startTime;
 fprintf('\nComputation ended at %s\n', endTime);
