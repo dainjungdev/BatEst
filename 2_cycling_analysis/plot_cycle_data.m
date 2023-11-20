@@ -5,7 +5,7 @@ function plot_cycle_data(file_path, is_subplot)
     % Load data
     % data = parquetread(file_path);
     data = parquetread('Data/Examples/Raj2020_Cycling.parquet');
-
+    
     % Unique cycle indices
     cycles = unique(data.Cycle_Index);
 
