@@ -58,7 +58,7 @@ OCP_filename = {'Raj2020_NCA.parquet','Raj2020_Graphite.parquet'};
 
 % Create empty properties
 cycle_step = [];
-DataType = '';
+DataType = 'Cycling';
 
 % Select subset of data
 % if j==1
