@@ -70,7 +70,7 @@ std_RMSE = std(RMSE_values, 0, 2);
 RMSE_table = array2table(RMSE_values, 'VariableNames', strcat('Delta=', string(delta)));
 RMSE_table.Properties.RowNames = varying_params;
 RMSE_table.std_RMSE = std_RMSE;
-save_output(RMSE_table,['1_sensitivity_analysis/out_sensitivity_real_data_RMSE_table' ...
+save_output(RMSE_table,['1_sensitivity_analysis/out_sensitivity_real_table' ...
     num2str(min_value) '_' num2str(max_value) '_' num2str(num_delta)], true)
 
 if num_delta < 10

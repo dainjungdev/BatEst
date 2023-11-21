@@ -33,8 +33,8 @@ Target = 'Parameter';
 Estimator = 'PEM';
 
 cycles_data = import_parquet('Data/Examples/Raj2020_Cycling.parquet');
-Dataset = cycles_data(cycles_data.Cycle_Index == 1, :);
-Dataset = Dataset(Dataset.Step_Index == 7,:);
+for i = 3
+Dataset = cycles_data(cycles_data.Cycle_Index == i & cycles_data.Step_Index == 7, :);
 
 %% Start
 fprintf('\nComputation started at %s\n', datetime("now"));
@@ -69,9 +69,9 @@ params = step4(Target,params,true_sol,pred_sol);
 out = tabulate_output(params,out);
 
 % Save output and current figure
-save_output(out,['Data/out_' ModelName]);
-% save_plot(gcf,['Data/plot_' ModelName]);
-
+save_output(out,['2_cycling_analysis/out/cycle_' ModelName '_' num2str(i)]);
+save_plot(gcf,['2_cycling_analysis/out/cycle_' ModelName '_' num2str(i)]);
+end
 
 end
 
