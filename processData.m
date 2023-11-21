@@ -1,5 +1,4 @@
 function processData(folderPath)
-% Changes all files in folder(Raj. Dataset) to suitable format for BatEst
     % List all .mat files in the folder
     matFiles = dir(fullfile(folderPath, '*.mat'));
 
@@ -21,7 +20,8 @@ function processData(folderPath)
         processedTable = processTable(originalTable); 
 
         % Save the processed table in the 'out' folder with the same filename
-        saveFilePath = fullfile(outFolder, matFiles(i).name);
+
+        saveFilePath = fullfile(outFolder, strrep(matFiles(i).name, ' ', ''));
 
         % Create a structure with a dynamic field name
         S.(tableName{1}) = processedTable;
