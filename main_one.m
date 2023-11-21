@@ -25,7 +25,7 @@ if ~exist('input_params','var'), input_params = []; end
 
 % Settings
 ModelName = 'EHMT';
-Target = 'Simulate';
+Target = 'Parameter';
 Estimator = 'PEM';
 
 

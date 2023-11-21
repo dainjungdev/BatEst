@@ -1,7 +1,6 @@
 function [out, params] = main_one_cycle(Dataset,out,input_params)
 % This is the main script for a single simulation or optimisation step.
 % The inputs and outputs are optional.
-
 close all;
 reset_path;
 
