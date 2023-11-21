@@ -17,7 +17,7 @@ end
 if OK
     saveas(fighandle,[filename '.fig'])
     saveas(fighandle,[filename '.png'])
-    % close(figure(fighandle));
+    close(figure(fighandle));
 else
     warning('File was not saved.');
 end

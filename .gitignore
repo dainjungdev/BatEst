@@ -25,3 +25,6 @@ Data/*
 !Data/DATA_PREP_GUIDE.md
 !Data/Examples/
 QuickGuide/
+
+# Ignore copied dataset(too large)
+2_cycling_analysis/TPG2_data
