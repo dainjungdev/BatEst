@@ -22,7 +22,8 @@ function [Model, params] = set_model(ModelName,params,j)
 
 % Define an initial guess and uncertainty for each unknown parameter
 guess = [1/Q; 1/tau; 1/b; 1/Ip; 1/In; nu; miu; Rf];
-uncert = [0.05; 0.1; 0.1; 0; 0.5; 0; 0; 0.5];
+
+uncert = [0.2; 0.3; 0.3; 0.5; 0.7; 0.3; 0.3; 0.7];
 
 % Set the rescaling factor and scale the initial guesses
 fac = 2*guess;

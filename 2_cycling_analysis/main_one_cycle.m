@@ -1,15 +1,14 @@
-function [out, params] = main_one_cycle(Dataset,out,input_params)
+function [out, params] = main_one_cycle(Dataset, out, input_params)
 % This is the main script for a single simulation or optimisation step.
 % The inputs and outputs are optional.
+
 close all;
 reset_path;
 
 startTime = datetime('now');
-fprintf('\nmain_multi started at %s\n', startTime);
+fprintf('\nRun: main_one_cycle\nStarted at %s\n', startTime);
 
 % Initialise optional variables
-% To create a Dataset use: Dataset = importParquet('XXX.csv');
-% Dataset = parquetread('Code/Common/Import/ExampleDataset.parquet');
 if ~exist('Dataset','var'), Dataset = []; end
 
 % To append the output from a previous estimation, use the input out.
@@ -32,11 +31,21 @@ ModelName = 'EHM';
 Target = 'Parameter';
 Estimator = 'PEM';
 
-cycles_data = import_parquet('Data/Examples/Raj2020_Cycling.parquet');
-for i = 3
-Dataset = cycles_data(cycles_data.Cycle_Index == i & cycles_data.Step_Index == 6, :);
+% Load data
+% Dataset = import_parquet('2_cycling_analysis/TPG2_03_Cell3.parquet');
+Dataset = import_parquet('2_cycling_analysis/Raj2020_Cycling.parquet');
+
+% % Unique cycle indices
+% cycles = unique(Dataset.Cycle_Index)';
+
+for i = 1
+cycle_data = Dataset(Dataset.Cycle_Index == i & Dataset.Step_Index == 7, :);
+% if isempty(cycle_data) 
+%     continue;
+% end
 
 %% Start
+fprintf('\nCycle: %d', i)
 fprintf('\nComputation started at %s\n', datetime("now"));
 
 % Add relevant paths
@@ -45,20 +54,20 @@ addpath(genpath(strcat('./Code/Models/',ModelName)));
 addpath(genpath(strcat('./Code/Methods/',Estimator)));
 
 % Define dimensionless model
-[Model, params] = step0(ModelName,0,input_params);
+[Model, params] = step0(ModelName,i,input_params);
 Model.Noise = false; % true or false
 
 % Load or generate data
-[true_sol, params] = step1(Target,Model,params,6,Dataset);
+[true_sol, params] = step1(Target, Model, params, i, cycle_data);
 
 % Perform estimation and update parameter values
-[est_sol,  params] = step2(Target,Model,params,0);
+[est_sol,  params] = step2(Target, Model, params, i);
 
 % Run simulation using updated parameters
-[pred_sol, params] = step3(Target,Model,params,0,est_sol);
+[pred_sol, params] = step3(Target, Model, params, i, est_sol);
 
 % Compare prediction and data
-params = step4(Target,params,true_sol,pred_sol);
+params = step4(Target, params, true_sol, pred_sol);
 
 
 %% Save
@@ -66,11 +75,11 @@ params = step4(Target,params,true_sol,pred_sol);
 % can be re-generated using Simulate or Compare.
 
 % Convert and save the parameters in a table
-out = tabulate_output(params,out);
+out = tabulate_output(params, out);
 
 % Save output and current figure
-save_output(out,['2_cycling_analysis/out/cycle_discharge' ModelName '_' num2str(i)]);
-save_plot(gcf,['2_cycling_analysis/out/cycle_discharge' ModelName '_' num2str(i)]);
+save_output(out,['2_cycling_analysis/out/' ModelName '_' num2str(i)]);
+save_plot(gcf,['2_cycling_analysis/out/' ModelName '_' num2str(i)]);
 end
 
 end

@@ -60,7 +60,11 @@ OCP_filename = {'Raj2020_NCA.parquet','Raj2020_Graphite.parquet'};
 cycle_step = [];
 DataType = 'Cycling';
 
-% Select subset of data
+% % Create empty properties
+% cycle_step = [j;7];
+% DataType = 'Cycling';
+
+% % Select subset of data
 % if j==1
 %     cycle_step = [0;10];
 %     DataType = 'Pseudo-OCV charge';

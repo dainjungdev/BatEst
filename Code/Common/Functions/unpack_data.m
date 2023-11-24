@@ -49,7 +49,7 @@ if tpoints(end)-tpoints(1) > 50*3600
 end
 
 % Optional down-sampling to reduce the number of datapoints
-target = 900;
+target = 500;
 ds = max(floor(length(tpoints)/target),1);
 tpoints = tpoints(1:ds:end);
 

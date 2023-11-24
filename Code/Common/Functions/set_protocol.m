@@ -11,6 +11,9 @@ if nargin==1
     
     % Manually define or load the protocol
     [tt, uu] = cell_protocol(params);
+    %% tt: 0 to half hour
+    %% uu: assigned function of pulse, sine wave, etc, positive
+    %% dynamic charging profile
     
     % Rescale the inputs
     uu(:,1) = uu(:,1)/Um;
