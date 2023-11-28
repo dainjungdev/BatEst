@@ -32,13 +32,12 @@ Target = 'Parameter';
 Estimator = 'PEM';
 
 % Load data
-% Dataset = import_parquet('2_cycling_analysis/TPG2_03_Cell3.parquet');
-Dataset = import_parquet('2_cycling_analysis/Raj2020_Cycling.parquet');
+Dataset = import_parquet('2_cycling_analysis/TPG2.3-Cell3.parquet');
 
-% % Unique cycle indices
-% cycles = unique(Dataset.Cycle_Index)';
+% Unique cycle indices
+cycles = unique(Dataset.Cycle_Index)';
 
-for i = 1
+for i = 1:24
 cycle_data = Dataset(Dataset.Cycle_Index == i & Dataset.Step_Index == 7, :);
 % if isempty(cycle_data) 
 %     continue;
@@ -78,8 +77,8 @@ params = step4(Target, params, true_sol, pred_sol);
 out = tabulate_output(params, out);
 
 % Save output and current figure
-save_output(out,['2_cycling_analysis/out/' ModelName '_' num2str(i)]);
-save_plot(gcf,['2_cycling_analysis/out/' ModelName '_' num2str(i)]);
+save_output(out,['2_cycling_analysis/out/detail/' ModelName '_' num2str(i)]);
+save_plot(gcf,['2_cycling_analysis/out/detail/' ModelName '_' num2str(i)]);
 end
 
 end

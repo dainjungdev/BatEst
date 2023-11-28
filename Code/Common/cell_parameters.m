@@ -57,12 +57,12 @@ OCP_filename = {'Raj2020_NCA.parquet','Raj2020_Graphite.parquet'};
 % entry to 'cycle_step' equal to the last Step_Index in the sequence.
 
 % Create empty properties
-cycle_step = [];
+cycle_step = [j;7];
 DataType = 'Cycling';
 
-% % Create empty properties
-% cycle_step = [j;7];
-% DataType = 'Cycling';
+% Create empty properties
+% cycle_step = [];
+% DataType = '';
 
 % % Select subset of data
 % if j==1
