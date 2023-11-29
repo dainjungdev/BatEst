@@ -66,10 +66,10 @@ for n = cell_num
             
             % Add relevant paths
             reset_path;
-            addpath(genpath(strcat('./Code/Models/',ModelName)));
-            addpath(genpath(strcat('./Code/Methods/',Estimator)));
+            addpath(genpath(strcat('./BatEst/Code/Models/',ModelName)));
+            addpath(genpath(strcat('./BatEst/Code/Methods/',Estimator)));
             
-            % Define dimensionless model
+            % Define dimensionless models
             [Model, params] = step0(ModelName, j, params);
             Model.Noise = false; % true or false
 
@@ -93,9 +93,8 @@ for n = cell_num
             % Convert and save the parameters in a table
             out = tabulate_output(params, out);
 
-            % Save output and current figure (true = overwrite by default)
-            save_output(out,['0_initial_results/out_' ModelName '_' num2str(n) '_' num2str(k)],true);
-            % save_plot(gcf,['Data/plot_' ModelName '_' num2str(n) '_' num2str(k)],true);
+            outputPath = 'BatEst/Data/out/';
+            % save_plot(gcf,[outputPath ModelName '_' num2str(n) '_' num2str(k)],true);
         end
     end
 end
@@ -104,6 +103,10 @@ endTime = datetime('now');
 duration = endTime - startTime;
 fprintf('\nComputation ended at %s\n', endTime);
 fprintf('Total duration: %s\n', duration);
+
+% Save output and current figure (true = overwrite by default)
+save_output(out,[outputPath ModelName],true);
+reset_path;
 
 end
 

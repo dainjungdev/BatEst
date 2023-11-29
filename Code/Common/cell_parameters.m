@@ -56,13 +56,54 @@ OCP_filename = {'Raj2020_NCA.parquet','Raj2020_Graphite.parquet'};
 % equal to the Step_Index. To include a sequence of steps, add a third
 % entry to 'cycle_step' equal to the last Step_Index in the sequence.
 
-% Create empty properties
-cycle_step = [j;7];
-DataType = 'Cycling';
+% Select subset of data
+if j == 1
+    cycle_step = [0;10];
+    DataType = 'Pseudo-OCV charge';
+elseif j == 2
+    cycle_step = [0;5];
+    DataType = 'Relaxation';
+elseif j == 3
+    cycle_step = [0;6];
+    DataType = 'CCCV charge';    
+elseif j == 4
+    cycle_step = [0;2];
+    DataType = 'CCCV charge';
+end
+
+
+
+
+% rep_num = 1: Pseudo-OCV charge(cycle_step = [0;10])
+% rep_num = 2: Relaxation(cycle_step = [0;9])
+% rep_num = 3; CCCV(cycle_step = [0;2])
+% rep_num = 4; Relaxation(cycle_step = [0;5])
+% rep_num = 5; CCCV(cycle_step = [0;6])
+
+
+% % Select subset of data
+% if j == 1
+%     cycle_step = [0;10];
+%     DataType = 'Pseudo-OCV charge';
+% elseif j == 2
+%     cycle_step = [3;12];
+%     DataType = 'Relaxation';
+% elseif j == 3
+%     cycle_step = [1;7];
+%     DataType = 'Cycling';
+% elseif j == 4
+%     cycle_step = [3;9];
+%     DataType = 'CCCV charge';
+% end
+
+
+% % Create empty properties
+% cycle_step = [j;7];
+% DataType = 'Cycling';
 
 % Create empty properties
-% cycle_step = [];
-% DataType = '';
+% % cycle_step = [];
+% % DataType = '';
 
 % % Select subset of data
 % if j==1
@@ -75,6 +116,7 @@ DataType = 'Cycling';
 %     cycle_step = [0;6];
 %     DataType = 'CCCV charge';
 % end
+
 
 
 %% Compile all parameters into the params structure
