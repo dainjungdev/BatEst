@@ -11,8 +11,8 @@ rmpath(codepath);
 
 addpath('./Code/');
 addpath(genpath('./Code/Common/'));
-
 addpath('./Data/Examples/');
+
 cd('..');
-addpath(genpath('./Project'));
+projectpath = genpath('./Project');
 end
