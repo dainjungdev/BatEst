@@ -13,6 +13,8 @@ addpath('./Code/');
 addpath(genpath('./Code/Common/'));
 addpath('./Data/Examples/');
 
+addpath('./Code/Subfunctions/');
+
 cd('..');
-projectpath = genpath('./Project');
+addpath(genpath('Project/'));
 end
