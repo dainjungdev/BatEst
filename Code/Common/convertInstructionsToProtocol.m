@@ -4,10 +4,7 @@ function [tt, uu] = convertInstructionsToProtocol(instructions, params)
 % This conversion depends on the nature of each instruction (current, voltage, rest) 
 % and the parameters of the battery model.
 
-% Load parameters
-Crate = params.Crate;
-Vmax = params.Vmax; % Assuming these exist in your params structure
-% ...
+[mn, hr, Crate, CtoK] = struct2array(params, {'mn','hr','Crate','CtoK'});
 
 % Initialize arrays
 tt = [];

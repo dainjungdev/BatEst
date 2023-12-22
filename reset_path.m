@@ -15,6 +15,9 @@ addpath('./Data/Examples/');
 
 addpath('./Code/Subfunctions/');
 
+addpath('./Classes/');
+addpath(genpath('./Classes/'));
+
 cd('..');
 addpath(genpath('Project/'));
 end
