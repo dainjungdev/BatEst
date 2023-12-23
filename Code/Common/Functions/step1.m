@@ -35,7 +35,6 @@ end
 if strcmp(Target,'Simulate') || (~istable(Dataset) && strcmp(Target,'Parameter'))
     % Run the model simulation
     true_sol = run_simulation(Model, params);
-    disp('hi')
     true_sol.Type = 'True';  % Mark the solution as true data
 end
 
