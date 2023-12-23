@@ -33,6 +33,8 @@ classdef CellProtocol
             % class) and converts them into a protocol with time points tt and corresponding
             % input values uu.
             
+            disp('cellprotocoltest')
+            disp('hi')
             % Convert structured instructions into tt and uu arrays
             Crate = obj.params.Crate;
             Vmax = obj.params.Vmax; % Assuming these exist in your params structure
@@ -46,6 +48,7 @@ classdef CellProtocol
         
             for i = 1:length(instructions)
                 instruction = instructions(i);
+                instruction = instruction{1,1};
         
                 switch instruction.type
                     case 'current'
@@ -74,7 +77,19 @@ classdef CellProtocol
                         % Append to arrays
                         tt = [tt; newTimes];
                         uu = [uu; newCurrents, zeros(size(newTimes)), zeros(size(newTimes))];
-        
+
+                    case 'sineWave'
+                        % Define the time and current for sine wave
+                        newTimes = linspace(currentTime, currentTime + instruction.duration, 100)';
+                        newCurrents = instruction.amplitude * sin(2 * pi * instruction.frequency * newTimes + instruction.phase);
+                
+                        % Append to arrays
+                        tt = [tt; newTimes];
+                        uu = [uu; newCurrents];
+                
+                        % Update the current time
+                        currentTime = tt(end);
+
                     % Add more cases as needed
                 end
         

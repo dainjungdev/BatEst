@@ -1,4 +1,4 @@
-function [true_sol, params] = step1(Target, Model, params, j, Dataset)
+function [true_sol, params] = step11(Target, Model, params, j, Dataset, experiment)
 % This step loads the data or simulates the model to generate data.
 
 % Initialise the solution structure
@@ -21,8 +21,17 @@ if istable(Dataset) && any(strcmp(Target,{'Simulate','Plot','Compare','Parameter
 
 % Set the protocol based on script if no dataset is provided
 elseif any(strcmp(Target,{'Simulate', 'Parameter'}))
-    params = set_protocol(params);
 
+    % Handle the case where an Experiment object is provided
+    if nargin == 6 && isa(experiment, 'Experiment')
+        % Set the protocol based on the instructions from the Experiment object
+        params = set_protocol(params, experiment);
+
+    else
+        params = set_protocol(params);
+    
+    end
+    
 % If Target is not recognised, throw an error
 elseif ~strcmp(Target,'Control')
     error(['Check that Target is set to one of the available options ' ...
@@ -34,8 +43,8 @@ end
 %% If simulation is required or no dataset is provided for parameter setting
 if strcmp(Target,'Simulate') || (~istable(Dataset) && strcmp(Target,'Parameter'))
     % Run the model simulation
+    disp('hi');
     true_sol = run_simulation(Model, params);
-    disp('hi')
     true_sol.Type = 'True';  % Mark the solution as true data
 end
 

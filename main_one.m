@@ -24,8 +24,8 @@ if ~exist('input_params','var'), input_params = []; end
 % Estimator: choose from the available Methods (Fmincon, PEM)
 
 % Settings
-ModelName = 'EHMT';
-Target = 'Parameter';
+ModelName = 'EHM';
+Target = 'Simulate';
 Estimator = 'PEM';
 
 
@@ -34,8 +34,8 @@ fprintf('\nComputation started at %s\n', datetime("now"));
 
 % Add relevant paths
 reset_path;
-addpath(genpath(strcat('./Code/Models/',ModelName)));
-addpath(genpath(strcat('./Code/Methods/',Estimator)));
+addpath(genpath(strcat('./BatEst/Code/Models/',ModelName)));
+addpath(genpath(strcat('./BatEst/Code/Methods/',Estimator)));
 
 % Define dimensionless model
 [Model, params] = step0(ModelName,0,input_params);
@@ -62,7 +62,7 @@ params = step4(Target,params,true_sol,pred_sol);
 out = tabulate_output(params,out);
 
 % Save output and current figure
-save_output(out,['Data/out_' ModelName]);
+save_output(out,['BatEst/Data/out_' ModelName]);
 % save_plot(gcf,['Data/plot_' ModelName]);
 
 

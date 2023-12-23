@@ -13,11 +13,14 @@ addpath('./Code/');
 addpath(genpath('./Code/Common/'));
 addpath('./Data/Examples/');
 
+<<<<<<< HEAD
 addpath('./Code/Subfunctions/');
 
 addpath('./Classes/');
 addpath(genpath('./Classes/'));
 
+=======
+>>>>>>> parent of b2b681e (refactor main_multi, add backup file for select_data_subset)
 cd('..');
-addpath(genpath('Project/'));
+projectpath = genpath('./Project');
 end

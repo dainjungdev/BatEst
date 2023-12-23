@@ -24,6 +24,7 @@ if nargin==1
 elseif nargin==2
     % Check the type of second argument
         if isa(varargin{1}, 'Experiment')
+            disp('3');
             % type = experiment
             % Load parameters
             [mn, hr, Crate, Um, Vcut, Vrng, CtoK, TtoK, Trng] = ...
