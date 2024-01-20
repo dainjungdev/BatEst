@@ -47,9 +47,22 @@ Model.Noise = false; % true or false
 % Compare prediction and data
 params = step4(Target,params,true_sol,pred_sol);
 
-out = tabulate_output(params, out);
+%% Save
+% Only need to save the updated parameters structure as plots
+% can be re-generated using Simulate or Compare.
 
-finalizeComputation(startTime, outputPath, ModelName, out);
+% Convert and save the parameters in a table
+out = tabulate_output(params,out);
+
+endTime = datetime('now');
+duration = endTime - startTime;
+fprintf('\nComputation ended at %s\n', endTime);
+fprintf('Total duration: %s\n', duration);
+
+% Save output and current figure
+% save_output(out, [outputPath '/' ModelName], true);
+% save_plot(gcf,[outputPath '/' ModelName]);
+reset_path;
 
 end
 

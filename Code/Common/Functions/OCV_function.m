@@ -49,12 +49,12 @@ if isfield(params, 'MSMR') && params.MSMR
     % end
 
     % Create a range of voltages (U) to compute SOC
-    voltage = linspace(2.5, 4.2, 100);  % Voltage range (example)
-    Qj = individual_reactions(voltage, U0, Qj_tot, omega, T);  % potential-dependent lithium occupancy
-    soc = Qj / Qj_tot; % Calculate SOC for each voltage
+    V = linspace(2.5, 4.2, 100);  % Voltage range (example)
+    Qj = individual_reactions(V, U0, Qj_tot, omega, T);  % potential-dependent lithium occupancy
+    S = Qj / Qj_tot; % Calculate SOC for each voltage
 
     % Create a spline representation
-    spl = spline(soc(50:75), voltage(50:75));
+    spl = spline(S(50:75), V(50:75));
 
     % Define the OCV function using ppval
     OCP = @(x) ppval(spl, x);
@@ -71,7 +71,7 @@ if isfield(params, 'MSMR') && params.MSMR
 
     % Plot open-circuit voltage
     if plot_model
-        x = [0, linspace(0,1,100)];
+        x = [0, logspace(-3,-0.3,100)];
         x = unique([x,1-x]);
         figure; hold on;
         plot(x,OCP(x),'b:+');
