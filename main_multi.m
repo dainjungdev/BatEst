@@ -9,9 +9,19 @@ if ~exist('params','var'), params = []; end
 if ~exist('rep_num','var'), rep_num = 1:3; end
 if ~exist('outputPath', 'var'), outputPath = './BatEst/Data/out/'; end
 
+Dataset = [];
+
 % Set the section number(s) or number of repetitions
 for j = rep_num
-    [ModelName, Target, Estimator] = defineSettings(j);
+    % Define Settings
+    if j == 1
+        ModelName = 'OCV';
+    elseif j >= 2
+        ModelName = 'EHM';
+    end
+    Target = 'Simulate';
+    Estimator = 'PEM';
+
     addModelAndMethodPaths(ModelName, Estimator);
     
     [Model, params] = step0(ModelName, j, params);
