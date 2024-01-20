@@ -9,72 +9,84 @@ function OCV = OCV_function(params)
 % Check if MSMR model is to be used
 if isfield(params, 'MSMR') && params.MSMR
     % Define parameters for MSMR model
-    % Testing with example parameters for each reaction j
-    % U0 = params.U0;  % Standard potential for reaction j
-    U0 = 3.5;   % Standard potential for reaction j (Example)
-    % Qj_tot = params.Qj_tot;  % Total insertion capacity for reaction j
-    Qj_tot = 1.8;  % Total insertion capacity (Example)
-    % omega = params.omega;  % Non-ideality factor for reaction j
-    omega = 1;  % (if Nernst equilibrium, omega = 1)
+    %% Single Reaction
+    % % Testing with example parameters for each reaction j
+    % U0 = 3.5;   % Standard potential for reaction j (Example)
+    % Qj_tot = 1.8;  % Total insertion capacity (Example)
+    % omega = 1;  % if Nernst equilibrium, omega = 1 (Example)
+
+    %% Multiple Reaction
+    % Reference: Thermodynamic Model for Substitutional Materials: Application 
+    % to Lithiated Graphite, Spinel Manganese Oxide, Iron Phosphate, and Layered
+    % Nickel-Manganese-Cobalt Oxide" by Verbrugge et al., (2017)
+    % U0, Xj_tot, omega
+    MSMR_parameters = [3.62274, 0.13442, 0.96710;
+                       3.72645, 0.32460, 1.39712;
+                       3.90575, 0.21118, 3.50500;
+                       4.22955, 0.32980, 5.52757];
+
     Faraday = params.Faraday;  % Faraday's constant
     Rg = params.Rg;  % Gas Constant
     T = params.Tamb; % Assuming Tamb is a temperature in Kelvin
     f = Faraday / (Rg * T); % F/RT
-    
-    % % MSMR model for each reaction j
-    % % U is the independent variable representing the voltage
-    % Qj = @(U) Qj_tot ./ (1 + exp(f .* (U - U0) ./ omega));
-    % 
-    % % % Differential capacity for each reaction j
-    % % dQj_dU = @(U) -Qj_tot .* f .* exp(f .* (U - U0) ./ omega) ./ ...
-    % %              (omega .* (1 + exp(f .* (U - U0) ./ omega)).^2);
-    % 
-    % % % Total OCV and differential capacity
-    % % OCV = @(U) sum(arrayfun(Qj, U));  % Sum of Qj(U) over all reactions
-    % % dQ_dU = @(U) sum(arrayfun(dQj_dU, U));  % Sum of dQj_dU(U) over all reactions
-    % 
-    % % ... [rest of the MSMR implementation] ...
-    % % Q is SOC, U is Voltage
-    % 
-    % % Plot OCV if plot_model is true
-    % if plot_model
-    %     % Plot open-circuit voltage based on MSMR model
-    %     x = [0, logspace(-3, -0.3, 100)];  % State of charge
-    %     x = unique([x, 1 - x]);
-    %     y = arrayfun(Qj, x);  % Voltage for each SOC value
-    %     figure; hold on;
-    %     plot(x, y, 'b:+');  % Plot SOC on x-axis and Voltage on y-axis
-    %     xlabel('State of charge');
-    %     ylabel('Voltage (V)');
-    % end
 
     % Create a range of voltages (U) to compute SOC
-    U = linspace(2.5, 4.2, 100);  % Voltage range (example)
-    [Qj, dQj_dU] = individual_reactions(U, U0, Qj_tot, omega, T);  % potential-dependent lithium occupancy
-    S = Qj / Qj_tot; % Calculate SOC for each voltage
+    U = linspace(3.4, 5.0, 200);  % Voltage range (example)
+    num_reactions = size(MSMR_parameters, 1);
 
+    % Initialise arrays for Xj and dXj_dU
+    Xj = zeros(num_reactions, length(U));
+    dXj_dU = zeros(num_reactions, length(U));
+
+    for i = 1:num_reactions
+        U0 = MSMR_parameters(i, 1);
+        Xj_tot = MSMR_parameters(i, 2);
+        omega = MSMR_parameters(i, 3);
+        [Xj(i, :), dXj_dU(i, :)] = individual_reactions(U, U0, Xj_tot, omega, T);  % potential-dependent lithium occupancy
+    end
+
+    % Sum over all reactions
+    X = sum(Xj);
+    dX_dU = sum(dXj_dU);
+    
     % Create a spline representation
-    spl = spline(S(50:75), U(50:75));
+    spl = spline(X, U);
 
     % Define the OCV function using ppval
-    OCP = @(x) ppval(spl, x);
-    OCV = @(SOC,nu,miu) OCP(miu-nu*SOC);
+    OCV_o = @(x) ppval(spl, x);
+    OCV = @(SOC,nu,miu) OCV_o(miu-nu*SOC);
 
     % Plot OCV if plot_model is true
-    % Voltage vs. Qj, Voltage vs dQj/dU
+    % Voltage vs. Xj, Voltage vs dXj/dU
     if plot_model
-        subplot(1, 2, 1);
+        subplot(2, 2, 1);
         hold on;
-        plot(U, Qj, 'b:+');  % Plot Voltage vs. Qj
+        plot(U, Xj, '.');  % Plot Voltage vs. Xj
         xlabel('Voltage (V)');
-        ylabel('Qj (Ah)');
+        ylabel('Xj');
+        legend;
         hold off;
 
-        subplot(1, 2, 2);
+        subplot(2, 2, 2);
         hold on;
-        plot(U, dQj_dU, 'b:+');  % Plot Voltage vs. dQj/dU
+        plot(U, dXj_dU, '.');  % Plot Voltage vs. dXj/dU
         xlabel('Voltage (V)');
-        ylabel('dQj/dU');
+        ylabel('dXj/dU');
+        legend;
+        hold off;
+
+        subplot(2, 2, 3);
+        hold on;
+        plot(U, X, 'b:.');  % Plot Voltage vs. X
+        xlabel('Voltage (V)');
+        ylabel('X');
+        hold off;
+
+        subplot(2, 2, 4);
+        hold on;
+        plot(U, dX_dU, 'b:.');  % Plot Voltage vs. dX/dU
+        xlabel('Voltage (V)');
+        ylabel('dX/dU');
         hold off;
     end
 
@@ -83,7 +95,7 @@ if isfield(params, 'MSMR') && params.MSMR
         x = [0, logspace(-3,-0.3,100)];
         x = unique([x,1-x]);
         figure; hold on;
-        plot(x,OCP(x),'b:+');
+        plot(x,OCV_o(x),'b:.');
         xlabel('State of charge (SOC)');
         ylabel('Voltage (V)')
     end

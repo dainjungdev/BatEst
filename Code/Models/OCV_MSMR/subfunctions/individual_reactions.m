@@ -18,9 +18,10 @@ function [xj, dxjdu] = individual_reactions(U, U0, Xj, w, T)
     % dxjdu: (1-D array) Differential capacity
 
     % Constants
-    R = 8.314;  % Gas constant in J/(mol*K)
-    F = 96485;  % Faraday's constant in C/mol
-    f = F / (R * T);  % F/RT
+    Rg = 8.314472;  % gas constant (J mol-1 K-1)
+    F = 96487;     % Faraday's constant (C mol-1)
+
+    f = F / (Rg * T);  % F/RT
 
     % Fractional occupancy (xj)
     xj = Xj ./ (1 + exp(f .* (U - U0) ./ w));
