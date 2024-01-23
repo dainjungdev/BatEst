@@ -8,9 +8,20 @@ function J = cost_function(c,tt,yn,RHS,yeqn,X0,options)
 % Switch from row to column vector
 c = c';
 
+%% Compute the state 
+%%  SOC = tt/tt(end)
+
+%% Compute the voltage from MSMR model
+%%  Y = yeqn(SOC, c);
+
+
+
 % Compute consistent initial conditions and length of time vector
 Y0 = [X0; yeqn(0,X0,c)];
 lt = length(tt);
+
+
+
 
 % Make prediction by running the forward model
 try

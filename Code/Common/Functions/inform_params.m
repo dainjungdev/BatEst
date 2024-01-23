@@ -13,11 +13,12 @@ uncert = params.uncert;
 % Update the uncertainties
 if any(strcmp(ModelName,{'EHM','EHMT'}))
     if strcmp(DataType,'Relaxation')
-        uncert(1:8) = [0; 1; 0; 0; 0; 0; 0; 0];
+        uncert(1:8) = [0.03; 0.5; 0.03; 0.03; 0.03; 0.03; 0.03; 0.03];
     elseif strcmp(DataType,'CCCV charge')
-        uncert(1:8) = [0; 0; 0.1; 0; 0.5; 0; 0; 0.5];
+        uncert(1:8) = [0.03; 0.03; 0.1; 0.03; 0.5; 0.03; 0.03; 0.5];
     elseif strcmp(DataType,'Cycling')
-        uncert(1:8) = [0.03; 0; 0.03; 0; 0.03; 0.03; 0.03; 0.03];
+        uncert(1:8) = [0.03; 0.03; 0.03; 0.03; 0.03; 0.03; 0.03; 0.03];
+        % uncert(1:8) = [0.1; 0.1; 0.1; 0; 0.1; 0.1; 0.1; 0.1];
     end
 elseif strcmp(ModelName,'RORC')
     if strcmp(DataType,'Relaxation')
@@ -26,6 +27,10 @@ elseif strcmp(ModelName,'RORC')
         uncert(1:4) = [0; 0; 1; 1];
     elseif strcmp(DataType,'Cycling')
         uncert(1:4) = [0.03; 0; 0.03; 0.03];
+    end
+elseif strcmp(ModelName,'OCV')
+    if strcmp(DataType,'Pseudo-OCV charge')
+        uncert(1:3) = [0.1;0.1;0.1];
     end
 end
 

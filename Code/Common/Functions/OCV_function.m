@@ -24,6 +24,7 @@ if isfield(params, 'MSMR') && params.MSMR
                        3.72645, 0.32460, 1.39712;
                        3.90575, 0.21118, 3.50500;
                        4.22955, 0.32980, 5.52757];
+    % NEED MSMR_parameters input
 
     Faraday = params.Faraday;  % Faraday's constant
     Rg = params.Rg;  % Gas Constant
@@ -53,8 +54,13 @@ if isfield(params, 'MSMR') && params.MSMR
     spl = spline(X, U);
 
     % Define the OCV function using ppval
+    % Define OCV as a subfunction
     OCV_o = @(x) ppval(spl, x);
     OCV = @(SOC,nu,miu) OCV_o(miu-nu*SOC);
+
+%% need function V = OCV(x, c1, c2, c3)
+
+   % We need unknown parameters instead of miu and nu
 
     % Plot OCV if plot_model is true
     % Voltage vs. Xj, Voltage vs dXj/dU

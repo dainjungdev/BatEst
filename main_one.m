@@ -1,15 +1,19 @@
-function [out, params] = main_one(Dataset,out,input_params,outputPath)
+function [out, params] = main_one(Dataset,out,input_params,cycle_step,outputPath)
 % This is the main script for a single simulation or optimisation step.
 % The inputs and outputs are optional.
 
-startTime = setupEnvironment();
+close all;
+reset_path;
+startTime = datetime('now');
+fprintf('\nCode started at %s\n', startTime);
+% fprintf('Cycle: %d, Step: %d\n', cycle_step(1), cycle_step(2));
 
 % Initialise optional variables
 if ~exist('Dataset','var'), Dataset = []; end
 if ~exist('out','var'), out = []; end
 if ~exist('input_params','var'), input_params = []; end
+if ~exist('cycle_step','var'), cycle_step = []; end
 if ~exist('outputPath', 'var'), outputPath = './BatEst/Data/out'; end
-
 
 %% Setup
 % The following settings must be defined.
@@ -18,10 +22,10 @@ if ~exist('outputPath', 'var'), outputPath = './BatEst/Data/out'; end
 % Estimator: choose from the available Methods (Fmincon, PEM)
 
 % Settings
-ModelName = 'OCV_MSMR';
+ModelName = 'OCV';
 Target = 'Simulate';
 Estimator = 'PEM';
-
+% DataType = 'Cycling';
 
 %% Start
 fprintf('\nComputation started at %s\n', datetime("now"));
@@ -34,9 +38,11 @@ addpath(genpath(strcat('./BatEst/Code/Methods/',Estimator)));
 % Define dimensionless model
 [Model, params] = step0(ModelName,0,input_params);
 Model.Noise = false; % true or false
+% params.cycle_step = cycle_step;
+% params.DataType = DataType;
 
 % Load or generate data
-[true_sol, params] = step1(Target,Model,params,6,Dataset);
+[true_sol, params] = step1(Target,Model,params,0,Dataset);
 
 % Perform estimation and update parameter values
 [est_sol,  params] = step2(Target,Model,params,0);
@@ -52,7 +58,8 @@ params = step4(Target,params,true_sol,pred_sol);
 % can be re-generated using Simulate or Compare.
 
 % Convert and save the parameters in a table
-out = tabulate_output(params,out);
+out = tabulate_output(params, out);
+% summary_table = summarise(out);
 
 endTime = datetime('now');
 duration = endTime - startTime;
@@ -60,8 +67,15 @@ fprintf('\nComputation ended at %s\n', endTime);
 fprintf('Total duration: %s\n', duration);
 
 % Save output and current figure
-% save_output(out, [outputPath '/' ModelName], true);
-% save_plot(gcf,[outputPath '/' ModelName]);
+% outputPath = 'Project/06_cycling/out/cycle_OCV_test/Cell3_1_48_prev_estimate';
+% mkdir(outputPath);
+fileName = datestr(datetime('now'), 'yyyy-mm-dd_HH-MM-SS');
+save_output(out, [outputPath '/' fileName], true);
+
+% Save Summary
+% writetable(summary_table, [outputPath '/' fileName '.csv']);
+% save_plot(gcf,[outputPath '/' fileName]);
+
 reset_path;
 
 end

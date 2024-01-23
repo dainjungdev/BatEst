@@ -43,6 +43,7 @@ TtoK = Tmin+CtoK; % temperature conversion factor (K)
 
 % Set OCP filename(s)
 OCP_filename = {'Raj2020_NCA.parquet','Raj2020_Graphite.parquet'};
+% OCP_filename = {'Cell3_Cycle0_pseudoOCV.parquet','Raj2020_Graphite.parquet'};
 % OCP_filename = {'LGM50_NMC811','LGM50_GraphiteSiOx'};
 % OCP_filename = {'Hu2012_LiNMC'};
 
