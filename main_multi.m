@@ -11,7 +11,7 @@ if ~exist('out','var'), out = []; end
 if ~exist('params','var'), params = []; end
 % if ~exist('rep_num','var'), rep_num = 1:3; end
 if ~exist('cycle','var'), cycle = 0; end
-if ~exist('outputPath', 'var'), outputPath = './BatEst/Data/out/'; end
+if ~exist('outputPath', 'var'), outputPath = './Output'; end
 
 fprintf('Cycle: %d', cycle);
 

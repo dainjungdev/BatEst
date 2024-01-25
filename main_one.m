@@ -13,7 +13,7 @@ if ~exist('Dataset','var'), Dataset = []; end
 if ~exist('out','var'), out = []; end
 if ~exist('input_params','var'), input_params = []; end
 if ~exist('cycle_step','var'), cycle_step = []; end
-if ~exist('outputPath', 'var'), outputPath = './BatEst/Data/out'; end
+if ~exist('outputPath', 'var'), outputPath = './Output'; end
 
 %% Setup
 % The following settings must be defined.
@@ -22,7 +22,7 @@ if ~exist('outputPath', 'var'), outputPath = './BatEst/Data/out'; end
 % Estimator: choose from the available Methods (Fmincon, PEM)
 
 % Settings
-ModelName = 'OCV';
+ModelName = 'OCV_MSMR';
 Target = 'Simulate';
 Estimator = 'PEM';
 % DataType = 'Cycling';
