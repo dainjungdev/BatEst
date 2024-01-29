@@ -42,12 +42,11 @@ TtoK = Tmin+CtoK; % temperature conversion factor (K)
 % OCP_filename = {'Example_OCV.parquet'};
 
 % Set OCP filename(s)
-OCP_filename = {'Raj2020_NCA.parquet','Raj2020_Graphite.parquet'};
+% OCP_filename = {'Raj2020_NCA.parquet','Raj2020_Graphite.parquet'};
+OCP_filename = {'Cell8_OCV2_discharge.parquet'};
 
 % OCP_filename = {'Cell3_OCV0_charge.parquet','Raj2020_Graphite.parquet'};
 % This gave lower RMSE value than default!
-
-OCP_filename = {'Cell3_OCV0_charge.parquet','Cell3_OCV0_discharge.parquet'};
 
 % OCP_filename = {'LGM50_NMC811','LGM50_GraphiteSiOx'};
 % OCP_filename = {'Hu2012_LiNMC'};

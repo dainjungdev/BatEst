@@ -30,13 +30,8 @@ end
 S = cumtrapz(T.Test_Time_s,T.Current_A);
 S = Start+(-1)^Start*S/S(end);
 
-% Apply Savitzky-Golay Filter to Voltage data
-windowSize = 15; % Example window size
-polyOrder = 3; % Example polynomial order
-T.Voltage_V = sgolayfilt(T.Voltage_V, polyOrder, windowSize);
-
 % Optional down-sampling to reduce the number of datapoints
-lt = 2000;
+lt = 900;
 ds = max(floor(length(S)/lt),1);
 S = S(1:ds:end);
 V = T.Voltage_V(1:ds:end);
