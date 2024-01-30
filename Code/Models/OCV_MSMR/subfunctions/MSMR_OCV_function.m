@@ -2,8 +2,19 @@ function OCV = MSMR_OCV_function(params)
 % Unpack parameters
 [OCP_filename, plot_model] = ...
     struct2array(params, {'OCP_filename','plot_model'});
+    plot_model_2 = true;
 
-% OCP_filename = 'Cell8_OCV0_discharge.parquet';
+% OCV_filename = OCP_filename{1};
+% % Define the open-circuit voltage
+% if endsWith(OCV_filename,'.parquet','IgnoreCase',true)
+%     OCV = load_OCP(OCV_filename);
+% elseif endsWith(OCV_filename,'.csv','IgnoreCase',true) ...
+%         || endsWith(OCV_filename,'.mat','IgnoreCase',true)
+%     error(['Please convert the OCP data into the Parquet file format.' ...
+%            'See the DATA_PREP_GUIDE for more information.']);
+% else % filename is a function
+%     OCV = eval(OCV_filename);
+% end
 
 % Define parameters for MSMR model
     %% Single Reaction
@@ -22,6 +33,8 @@ function OCV = MSMR_OCV_function(params)
                        3.90575, 0.21118, 3.50500;
                        4.22955, 0.32980, 5.52757];
     % NEED MSMR_parameters input
+
+    % MSMR_parameters = [3.5, 1.8, 1];
 
     Faraday = params.Faraday;  % Faraday's constant
     Rg = params.Rg;  % Gas Constant
@@ -47,6 +60,7 @@ function OCV = MSMR_OCV_function(params)
     X = sum(Xj);
     dX_dU = sum(dXj_dU);
     
+    try
     % Create a spline representation
     spl = spline(X, U);
 
@@ -54,6 +68,9 @@ function OCV = MSMR_OCV_function(params)
     % Define OCV as a subfunction
     OCV_o = @(x) ppval(spl, x);
     OCV = @(SOC,nu,miu) OCV_o(miu-nu*SOC);
+    catch
+        plot_model_2 = false;
+    end
 
 %% need function V = OCV(x, c1, c2, c3)
 
@@ -93,8 +110,9 @@ function OCV = MSMR_OCV_function(params)
         hold off;
     end
 
+
     % SOC vs Voltage
-    if plot_model
+    if plot_model_2
         x = [0, logspace(-3,-0.3,100)];
         x = unique([x,1-x]);
         figure; hold on;
