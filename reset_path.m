@@ -17,4 +17,5 @@ addpath('./Code/Subfunctions/');
 
 cd('..');
 addpath(genpath('Project/'));
+addpath(genpath('data_PROCESSED/'));
 end

@@ -57,7 +57,7 @@ setinit(init_sys,'Fixed',fiX);
 
 % Set up successful estimation conditions
 NearBound = Inf;
-MaxSteps = 10; step = 0;
+MaxSteps = 100; step = 0;
 while NearBound>0 && step<MaxSteps
 
 % Estimate the model parameters and initial states

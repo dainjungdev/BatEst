@@ -13,6 +13,7 @@ if ~exist('params','var'), params = []; end
 if ~exist('cycle','var'), cycle = 0; end
 if ~exist('outputPath', 'var'), outputPath = './Output'; end
 
+
 fprintf('Cycle: %d', cycle);
 
 rep_num = 1:3;
@@ -75,10 +76,12 @@ fprintf('Total duration: %s\n', duration);
 % outputPath = 'Project/06_cycling/out/cycle_OCV_test/Cell3_1_48_prev_estimate';
 % mkdir(outputPath);
 fileName = datestr(datetime('now'), 'yyyy-mm-dd_HH-MM-SS');
-save_output(out, [outputPath '/' fileName], true);
+% save_output(out, [outputPath '/' fileName], true);
+save_output(out, [outputPath '/' fileName '_' num2str(cycle)], true);
 
 % Save Summary
-writetable(summary_table, [outputPath '/' fileName '.csv']);
+% writetable(summary_table, [outputPath '/' fileName '.csv']);
+writetable(summary_table, [outputPath '/' fileName '_' num2str(cycle) '.csv']);
 % save_plot(gcf,[outputPath '/' fileName]);
 
 reset_path;

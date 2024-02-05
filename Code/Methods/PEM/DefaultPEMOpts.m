@@ -10,13 +10,17 @@ EstOpts = nlgreyestOptions('Display','on', ...
                            'EstimateCovariance',false);
 
 Advanced = optimset('lsqnonlin');
-Advanced.TolFun = 1e-3;
-Advanced.TolX = 1e-3;
-Advanced.MaxIter = 20;
+% Advanced.Algorithm = 'trust-region-reflective';
+Advanced.TolFun = 1e-6;
+Advanced.TolX = 1e-6;
+Advanced.MaxIter = 100;
 EstOpts.SearchOptions.Advanced = Advanced;
 EstOpts.SearchOptions.FunctionTolerance = Advanced.TolFun;
 EstOpts.SearchOptions.StepTolerance = Advanced.TolX;
 EstOpts.SearchOptions.MaxIterations = Advanced.MaxIter;
+% EstOpts.Regularization.R = 1e-3; % For sensitivity analysis post-estimation
+% EstOpts.Regularization.Lambda = 0.1; % Not directly used by nlgreyest but for reference
+% EstOpts.Regularization.R = 1e-3; % For sensitivity analysis post-estimation
 
 EstOpts.GradientOptions.MinDifference = 1e-5;
 

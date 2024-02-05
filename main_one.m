@@ -22,8 +22,8 @@ if ~exist('outputPath', 'var'), outputPath = './Output'; end
 % Estimator: choose from the available Methods (Fmincon, PEM)
 
 % Settings
-ModelName = 'OCV_MSMR';
-Target = 'Simulate';
+ModelName = 'EHM';
+Target = 'Parameter';
 Estimator = 'PEM';
 % DataType = 'Cycling';
 
@@ -38,7 +38,7 @@ addpath(genpath(strcat('./BatEst/Code/Methods/',Estimator)));
 % Define dimensionless model
 [Model, params] = step0(ModelName,0,input_params);
 Model.Noise = false; % true or false
-% params.cycle_step = cycle_step;
+params.cycle_step = cycle_step;
 % params.DataType = DataType;
 
 % Load or generate data

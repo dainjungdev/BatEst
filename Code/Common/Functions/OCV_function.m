@@ -30,7 +30,7 @@ else
             x = [0, logspace(-3,-0.3,100)];
             x = unique([x,1-x]);
             figure; hold on;
-            plot(x,OCV(x),'b:+');
+            plot(x,OCV(x),'b');
             xlabel('State of charge');
             ylabel('Voltage (V)')
         end

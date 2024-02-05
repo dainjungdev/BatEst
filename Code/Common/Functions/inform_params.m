@@ -12,12 +12,13 @@ uncert = params.uncert;
 
 % Update the uncertainties
 if any(strcmp(ModelName,{'EHM','EHMT'}))
-    if strcmp(DataType,'Relaxation')
-        uncert(1:8) = [0.03; 0.5; 0.03; 0.03; 0.03; 0.03; 0.03; 0.03];
-    elseif strcmp(DataType,'CCCV charge')
-        uncert(1:8) = [0.03; 0.03; 0.1; 0.03; 0.5; 0.03; 0.03; 0.5];
+    % [1/Q; 1/tau; 1/b; 1/Ip; 1/In; nu; miu; Rf];
+    if strcmp(DataType,'Relaxation')  % diffusion coefficient
+        uncert(1:8) = [0; 1; 0; 0; 0; 0; 0; 0];
+    elseif strcmp(DataType,'CCCV charge')  % dynamic parameters(b, In, Rf)
+        uncert(1:8) = [0; 0; 1; 0; 1; 0; 0; 1];
     elseif strcmp(DataType,'Cycling')
-        uncert(1:8) = [0.03; 0.03; 0.03; 0.03; 0.03; 0.03; 0.03; 0.03];
+        uncert(1:8) = [0.03; 0; 0.03; 0; 0.03; 0.03; 0.03; 0.03];
         % uncert(1:8) = [0.1; 0.1; 0.1; 0; 0.1; 0.1; 0.1; 0.1];
     end
 elseif strcmp(ModelName,'RORC')
@@ -30,7 +31,7 @@ elseif strcmp(ModelName,'RORC')
     end
 elseif strcmp(ModelName,'OCV')
     if strcmp(DataType,'Pseudo-OCV charge')
-        uncert(1:3) = [0.1;0.1;0.1];
+        uncert(1:3) = [1;1;1];
     end
 end
 
