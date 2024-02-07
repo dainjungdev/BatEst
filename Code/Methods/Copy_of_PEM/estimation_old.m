@@ -14,18 +14,25 @@ if isempty(c_ind)
            'value of the uncertainties in set_model.m or inform_params.m.']);
 end
 
-% Set bounds
-lb = lb(c_ind);
-ub = ub(c_ind);
-lgap = c0(c_ind)-lb;
-ugap = ub-c0(c_ind);
-flexible_bounds = true;
-
 % Create iddata object to store output, input and sample rate
 timestep = tt(2)-tt(1);
 data = iddata(yn,[],timestep);
 data.Tstart = tt(1);
 data.TimeUnit = '';
+
+% Set bounds
+lb_new = lb(c_ind);
+ub_new  = ub(c_ind);
+c0_new = c0(c_ind);
+
+for k = 1:length(c_ind)
+for i = 1:10
+lb = lb_new.^((11-i)/10) .* ub_new.^((i-1)/10);
+ub = lb_new.^((10-i)/10) .* ub_new.^((i)/10);
+c0 = sqrt(lb .* ub);
+
+lgap = c0-lb;
+ugap = ub-c0;
 
 % Define an initial guess for the parameters
 for i = 1:length(c_ind)
@@ -60,6 +67,8 @@ runtic = tic;
 sys = pem(data,init_sys,EstOpts);
 X0 = sys.Report.Parameters.X0; %findstates(sys,data);
 toc(runtic);
+
+loss = sys.Report.Fit.LossFcn;
 
 % Analyze the estimation result
 % figure; compare(data,sys,init_sys);

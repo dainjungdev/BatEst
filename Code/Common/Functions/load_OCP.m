@@ -29,15 +29,21 @@ end
 % Compute the capacity and stoichiometry/SOC by integration
 S = cumtrapz(T.Test_Time_s,T.Current_A);
 S = Start+(-1)^Start*S/S(end);
+V = T.Voltage_V;
+p = pchip(S, V);
 
-% Optional down-sampling to reduce the number of datapoints
-lt = 900;
-ds = max(floor(length(S)/lt),1);
-S = S(1:ds:end);
-V = T.Voltage_V(1:ds:end);
+% New Downsampling Code
+S = (1:-0.001:0)';
+V = ppval(p, S);
+
+% % Optional down-sampling to reduce the number of datapoints
+% lt = 900;
+% ds = max(floor(length(S)/lt),1);
+% S = S(1:ds:end);
+% V = T.Voltage_V(1:ds:end);
 
 % Define the OCP/OCV function
-spl = spline(S,V); % produces a piecewise polynomial for use by PPVAL - can use spline, pchip or makima
+spl = pchip(S, V); % produces a piecewise polynomial for use by PPVAL - can use spline, pchip or makima
 OCP = @(S) ppval(spl,S);
 
 end

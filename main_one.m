@@ -25,7 +25,7 @@ if ~exist('outputPath', 'var'), outputPath = './Output'; end
 ModelName = 'EHM';
 Target = 'Parameter';
 Estimator = 'PEM';
-% DataType = 'Cycling';
+DataType = 'Cycling';
 
 %% Start
 fprintf('\nComputation started at %s\n', datetime("now"));
@@ -39,7 +39,7 @@ addpath(genpath(strcat('./BatEst/Code/Methods/',Estimator)));
 [Model, params] = step0(ModelName,0,input_params);
 Model.Noise = false; % true or false
 params.cycle_step = cycle_step;
-% params.DataType = DataType;
+params.DataType = DataType;
 
 % Load or generate data
 [true_sol, params] = step1(Target,Model,params,0,Dataset);
