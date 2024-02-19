@@ -6,10 +6,10 @@ function sol = unpack_data(data,params,j)
 % saved within the 'sol' structure. The vectors must be column vectors.
 
 % Unpack parameters
-[Um, Vcut, Vrng, TtoK, CtoK, Trng, Tamb, X0, Q, cycle_step, DataType, ...
+[Um, Vcut, Vrng, TtoK, CtoK, Trng, Tamb, X0, Qn, cycle_step, DataType, ...
     verbose] = ...
     struct2array(params,{'Um','Vcut','Vrng','TtoK','CtoK','Trng','Tamb', ...
-                         'X0','Q','cycle_step','DataType','verbose'});
+                         'X0','Qn','cycle_step','DataType','verbose'});
 if ~any(Trng)
     [TtoK, CtoK, Trng] = deal(1); % no scaling
 end
@@ -95,7 +95,7 @@ sol.DataType = DataType;
 % Compute charge throughput
 QT = trapz(data.Test_Time_s(start:finish),data.Current_A(start:finish));
 if verbose
-    disp(['The total charge throughput is ' num2str(QT/Q) ' Q.']);
+    disp(['The total charge throughput is ' num2str(QT/Qn) ' Q.']);
 end
 
 % Pass on initial voltage and temperature
@@ -132,7 +132,7 @@ if contains(DataType,'charge') && ~contains(DataType,'OCV')
     V_end = data.Voltage_V(relax_end);
     X_end = initial_SOC(params,V_end,0.9);
     X_input = X_end-X_init;
-    sol.CE = X_input*Q/QT; % coulombic efficiency
+    sol.CE = QT/(X_input*Qn); % coulombic efficiency
     if verbose
         disp(['Coulombic efficiency of ' num2str(sol.CE)]);
     end

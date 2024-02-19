@@ -50,6 +50,7 @@ switch Target
     case {'Simulate', 'Plot'}
         % If the target is simulation, we might not need to update parameters
         % This case can be used for a direct simulation without parameter updates
+        pred_sol = est_sol;
 
     otherwise
         error('Invalid Target specified for step3 function.');

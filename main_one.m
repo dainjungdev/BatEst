@@ -23,9 +23,12 @@ if ~exist('outputPath', 'var'), outputPath = './Output'; end
 
 % Settings
 ModelName = 'EHM';
-Target = 'Parameter';
+Target = 'Compare';
 Estimator = 'PEM';
-DataType = 'Cycling';
+DataType = 'Relaxation';
+cycle_step = [0;6];
+% DataType = 'CCCV charge';
+% cycle_step =[0;6];
 
 %% Start
 fprintf('\nComputation started at %s\n', datetime("now"));
@@ -36,19 +39,19 @@ addpath(genpath(strcat('./BatEst/Code/Models/',ModelName)));
 addpath(genpath(strcat('./BatEst/Code/Methods/',Estimator)));
 
 % Define dimensionless model
-[Model, params] = step0(ModelName,0,input_params);
+[Model, params] = step0(ModelName,3,input_params);
 Model.Noise = false; % true or false
 params.cycle_step = cycle_step;
 params.DataType = DataType;
 
 % Load or generate data
-[true_sol, params] = step1(Target,Model,params,0,Dataset);
+[true_sol, params] = step1(Target,Model,params,3,Dataset);
 
 % Perform estimation and update parameter values
-[est_sol,  params] = step2(Target,Model,params,0);
+[est_sol,  params] = step2(Target,Model,params,3);
 
 % Run simulation using updated parameters
-[pred_sol, params] = step3(Target,Model,params,0,est_sol);
+[pred_sol, params] = step3(Target,Model,params,3,est_sol);
 
 % Compare prediction and data
 params = step4(Target,params,true_sol,pred_sol);

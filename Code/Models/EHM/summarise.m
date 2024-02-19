@@ -1,7 +1,7 @@
 function summary_table = summarise(out)
     % Create a new table with the selected columns
-    summary_table = table(out.RowN, out.Qn ./ out.hr, out.nu, out.miu, out.S0, out.tau, out.b, out.Ip, out.In, out.Rf, out.RMSE_mV, ...
-                          'VariableNames', {'RowN', 'Qn/hr', 'nu', 'miu', 'S0', 'tau', 'b', 'Ip', 'In', 'Rf', 'RMSE_mV'});
+    summary_table = table(out.RowN, out.Q./ out.hr, out.Qn ./ out.hr, out.nu, out.miu, out.S0, out.tau, out.b, out.Ip, out.In, out.Rf, out.RMSE_mV, ...
+                          'VariableNames', {'RowN', 'Q/hr', 'Qn/hr', 'nu', 'miu', 'S0', 'tau', 'b', 'Ip', 'In', 'Rf', 'RMSE_mV'});
 
     % % Sort the table
     % if width(out) > 2 % Check if 'out' has more than 2 columns (e.g., 'Cell_Number' and 'Test_Number')

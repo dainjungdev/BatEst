@@ -55,75 +55,38 @@ init_sys.TimeUnit = '';
 % Set whether the initial states are fixed or free estimation parameters
 setinit(init_sys,'Fixed',fiX);
 
-% Estimate the model parameters and initial states
-runtic = tic;
-sys = pem(data,init_sys,EstOpts);
-X0 = sys.Report.Parameters.X0; %findstates(sys,data);
-toc(runtic);
-
-% Analyze the estimation result
-% figure; compare(data,sys,init_sys);
-
-% Extract the parameter estimates
-ce = sys.Report.Parameters.ParVector;
-
-% % Set up successful estimation conditions
-% NearBound = Inf;
-% MaxSteps = 100; step = 0;
-% while NearBound>0 && step<MaxSteps
-% 
-% % Estimate the model parameters and initial states
-% runtic = tic;
-% sys = pem(data,init_sys,EstOpts);
-% X0 = sys.Report.Parameters.X0; %findstates(sys,data);
-% toc(runtic);
-% 
-% % Analyze the estimation result
-% % figure; compare(data,sys,init_sys);
-% 
-% % Extract the parameter estimates
-% ce = sys.Report.Parameters.ParVector;
-% 
-% if ~flexible_bounds
-%     break;
-% end
-% 
-% % Check bounds
-% [mlb, ib(1)] = min(ce-lb);
-% [mub, ib(2)] = min(ub-ce);
-% [mb, i] = min([mlb,mub]);
-% if mb < 0.05*(lgap+ugap)
-%     NearBound = ib(i);
-%     if verbose
-%         warning(['At least one estimated parameter is very near or ' ...
-%                  'equal to one of its bounds. The closest value is the ' ...
-%                  'parameter in position ' num2str(c_ind(NearBound)) '.']);
-%     end
-% else
-%     NearBound = 0;
-%     continue;
-% end
-% 
-% % Widen the bounds
-% if lb(NearBound)==0
-%     if verbose
-%         warning('The lower bound for this parameter cannot be further reduced.');
-%     end
-%     NearBound = 0;
-% else
-%     lb(NearBound) = max(0,ce(NearBound)-lgap(NearBound));
-%     ub(NearBound) = ce(NearBound)+ugap(NearBound);
-%     init_sys = setpar(init_sys,'Value',  num2cell(ce));
-%     init_sys = setpar(init_sys,'Minimum',num2cell(lb));
-%     init_sys = setpar(init_sys,'Maximum',num2cell(ub));
-% end
-% 
-% % Update the initial states
-% init_sys = setinit(init_sys,'Value',num2cell(X0));
-% 
-% % Update the step count
-% step = step+1;
-% end
+for step = 1
+    % Estimate the model parameters and initial states
+    runtic = tic;
+    sys = pem(data,init_sys,EstOpts);
+    disp(sys.Report.Fit.LossFcn);
+    disp(sys.Report.Termination.WhyStop);
+    X0 = sys.Report.Parameters.X0; %findstates(sys,data);
+    toc(runtic);
+    
+    % Extract the parameter estimates
+    ce = sys.Report.Parameters.ParVector;
+    % 
+    % lb = sqrt(lb .* ce)
+    % ub = sqrt(ce .* ub)
+    % % 0.05 0.5 5.0 1
+    % % 0.1581 0.5 1.581 2
+    % % 0.2811 0.5 0.8891 3
+    % % 0.4714 0.5 0.6667 4
+    % % 0.4854 0.5 0.5773 5
+    % % 0.4926 0.5 0.5372 6
+    % % 0.4962 0.5 0.5182 7
+    % % 0.4980 0.5 0.5090 8
+    % % 0.4989 0.5 0.5044 9
+    % % 0.4994 0.5 0.5021 10
+    % init_sys = setpar(init_sys,'Value',  num2cell(ce));
+    % init_sys = setpar(init_sys,'Minimum',num2cell(lb));
+    % init_sys = setpar(init_sys,'Maximum',num2cell(ub));
+    % 
+    % % Update the initial states
+    % init_sys = setinit(init_sys,'Value',num2cell(X0));
+    
+end
 
 % Update the parameters
 c0(c_ind) = ce;

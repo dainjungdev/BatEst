@@ -30,7 +30,7 @@ end
 S = cumtrapz(T.Test_Time_s,T.Current_A);
 S = Start+(-1)^Start*S/S(end);
 V = T.Voltage_V;
-p = pchip(S, V);
+p = spline(S, V);
 
 % New Downsampling Code
 S = (1:-0.001:0)';
@@ -43,7 +43,7 @@ V = ppval(p, S);
 % V = T.Voltage_V(1:ds:end);
 
 % Define the OCP/OCV function
-spl = pchip(S, V); % produces a piecewise polynomial for use by PPVAL - can use spline, pchip or makima
+spl = spline(S, V); % produces a piecewise polynomial for use by PPVAL - can use spline, pchip or makima
 OCP = @(S) ppval(spl,S);
 
 end

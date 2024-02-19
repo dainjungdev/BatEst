@@ -6,7 +6,7 @@ function params = add_bounds(params)
 
 % Add upper and lower bounds based on the uncertainty
 ub = c0./(1-min(uncert,0.9));
-lb = c0.*(1-min(uncert,1));
+lb = c0.*(1-min(uncert,0.9));
 
 % ub = c0.*(1+uncert);
 % lb = c0.*(1-uncert);

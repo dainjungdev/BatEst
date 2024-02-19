@@ -6,15 +6,14 @@ startTime = datetime('now');
 fprintf('\nCode started at %s\n', startTime);
 
 % Initialise optional variables
-if ~exist('Dataset','var'), Dataset = import_parquet('./BatEst/Data/Examples/Raj2020_Tests.parquet'); end
+if ~exist('Dataset','var'), Dataset = import_parquet('Cell20_RPT4.parquet'); end
 if ~exist('out','var'), out = []; end
 if ~exist('params','var'), params = []; end
-% if ~exist('rep_num','var'), rep_num = 1:3; end
-if ~exist('cycle','var'), cycle = 0; end
+if ~exist('cycle','var'), cycle = 192; end
 if ~exist('outputPath', 'var'), outputPath = './Output'; end
 
-
-fprintf('Cycle: %d', cycle);
+fprintf('\n-------\nCycle: %d\n', cycle);
+params = load("Cell20_Cycle96_Step3.mat").params;
 
 rep_num = 1:3;
 % Set the section number(s) or number of repetitions
@@ -41,19 +40,19 @@ for j = rep_num
     addpath(genpath(strcat('./BatEst/Code/Methods/', Estimator)));
 
     % Define dimensionless model
-    [Model, params] = step0(ModelName,0,params);
+    [Model, params] = step0(ModelName,j,params);
     Model.Noise = false; % true or false
     params.DataType = DataType;
     params.cycle_step = cycle_step;
     
     % Load or generate data
-    [true_sol, params] = step1(Target,Model,params,0,Dataset);
-    
+    [true_sol, params] = step1(Target,Model,params,j,Dataset);
+
     % Perform estimation and update parameter values
-    [est_sol,  params] = step2(Target,Model,params,0);
+    [est_sol,  params] = step2(Target,Model,params,j);
     
     % Run simulation using updated parameters
-    [pred_sol, params] = step3(Target,Model,params,0,est_sol);
+    [pred_sol, params] = step3(Target,Model,params,j,est_sol);
     
     % Compare prediction and data
     params = step4(Target,params,true_sol,pred_sol);
@@ -76,6 +75,7 @@ fprintf('Total duration: %s\n', duration);
 % outputPath = 'Project/06_cycling/out/cycle_OCV_test/Cell3_1_48_prev_estimate';
 % mkdir(outputPath);
 fileName = datestr(datetime('now'), 'yyyy-mm-dd_HH-MM-SS');
+% save(fileName, "params");
 % save_output(out, [outputPath '/' fileName], true);
 save_output(out, [outputPath '/' fileName '_' num2str(cycle)], true);
 
