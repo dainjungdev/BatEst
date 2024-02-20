@@ -20,7 +20,7 @@ function [Model, params] = set_model(ModelName,params,j)
 
 % Define an initial guess and uncertainty for each unknown parameter
 guess = [1/Q; nu; miu];
-uncert = [0.1; 0.1; 0.1];
+uncert = [0.1; 0; 0];
 
 % Set the rescaling factor and scale the initial guesses
 fac = 2*guess;
@@ -44,10 +44,10 @@ params.nop = 6;
 f = @(c,i,t) feval(c{i},t)*fac(i);
 
 % Define the state derivatives
-dxdt = @(t,x,y,u,c) [c{1}*c{4}*u(1,:)]*c{8};
+dxdt = @(t,x,y,u,c) [f(c,1,t)*c{4}*u(1,:)]*c{8};
 
 % Define the output equation
-yeqn = @(t,x,u,c) (c{7}(x(1,:),c{2},c{3})-c{5})/c{6};
+yeqn = @(t,x,u,c) (c{7}(x(1,:))-c{5})/c{6};
 
 % Define the mass matrix
 Mass = diag([1; 0]);

@@ -2,14 +2,14 @@ function [out, params] = main_one(Dataset,out,input_params,cycle_step,outputPath
 % This is the main script for a single simulation or optimisation step.
 % The inputs and outputs are optional.
 
-close all;
+% close all;
 reset_path;
 startTime = datetime('now');
 fprintf('\nCode started at %s\n', startTime);
 % fprintf('Cycle: %d, Step: %d\n', cycle_step(1), cycle_step(2));
 
 % Initialise optional variables
-if ~exist('Dataset','var'), Dataset = []; end
+if ~exist('Dataset','var'), Dataset = import_parquet('Cell3_RPT0.parquet'); end
 if ~exist('out','var'), out = []; end
 if ~exist('input_params','var'), input_params = []; end
 if ~exist('cycle_step','var'), cycle_step = []; end
@@ -22,13 +22,11 @@ if ~exist('outputPath', 'var'), outputPath = './Output'; end
 % Estimator: choose from the available Methods (Fmincon, PEM)
 
 % Settings
-ModelName = 'EHM';
-Target = 'Compare';
+ModelName = 'OCV_MSMR';
+Target = 'Parameter';
 Estimator = 'PEM';
-DataType = 'Relaxation';
-cycle_step = [0;6];
-% DataType = 'CCCV charge';
-% cycle_step =[0;6];
+DataType = 'Pseudo-OCV charge';
+cycle_step =[0;10];
 
 %% Start
 fprintf('\nComputation started at %s\n', datetime("now"));

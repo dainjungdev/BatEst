@@ -48,7 +48,12 @@ if tpoints(end)-tpoints(1) > 50*3600
            'error in unpack_data.m if you would like to continue.']);
 end
 
+
 % Optional down-sampling to reduce the number of datapoints
+% if j == 1 target = 1500;
+% elseif j == 2 target = 600;
+% elseif j == 3 target = 2400;
+% end
 target = 900;
 ds = max(floor(length(tpoints)/target),1);
 tpoints = tpoints(1:ds:end);
@@ -104,7 +109,13 @@ V_init = data.Voltage_V(i);
 if verbose
     disp(['Starting voltage is ' num2str(V_init) ' V.']);
 end
-if abs(data.Current_A(i))<0.02
+if abs(data.Current_A(i))<0.02 && isfield(params, 'MSMR')
+    % Assume measurement starts at SOC = 0
+    [X_init, S_init] = deal(initial_SOC(params,V_init,0));
+    if verbose
+        disp(['The corresponding SOC estimate is ' num2str(X_init) '.']);
+    end
+elseif abs(data.Current_A(i))<0.02
     % Assume measurement starts at steady state
     [X_init, S_init] = deal(initial_SOC(params,V_init,0.5));
     if verbose
