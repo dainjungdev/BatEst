@@ -1,22 +1,21 @@
-function [V, dSOC_dV, dSOC_dV_V] = identify_peak(group_num, cell_num, ocv_num)
+function [V, dSOC_dV, dSOC_dV_V] = identify_peak(OCP_filename)
 reset_path;
 close all;
-generate_plot = true;
-filePath = sprintf('./data_PROCESSED/Group%d_Cell%d/OCV/Cell%d_OCV%d_discharge.parquet', group_num, cell_num, cell_num, ocv_num);
+generate_plot = false;
 
 %% 1. Define OCV function(x:SOC, y:Voltage)
 % Load the dataset
-T = parquetread(filePath);
+T = parquetread(OCP_filename{1});
 % Ensure that all values are of numeric type double
 T = convertvars(T,T.Properties.VariableNames,'double');
 
 % Define starting stoichiometry value
-if (-1)*mean(T.Current_A)<0
+if mean(T.Current_A)<0
     % Discharge
-    Start = 1;
+    Start = 0;
 else
     % Charge
-    Start = 0;
+    Start = 1;
 end
 
 % Compute the capacity and stoichiometry/SOC by integration
@@ -80,23 +79,23 @@ spl = spline(V, S);
 % Step 3: Generate the Inverse Function with Downsampled Data
 SOC_V = @(V) ppval(spl, V);
 
-% % Plotting
-% figure;
-% SOC = SOC_V(V);
-% plot(V, SOC);
-% xlabel('Voltage (V)');
-% ylabel('State of charge (SOC)');
-% title('Downsampled Average State of Charge vs. Voltage');
+% Plotting
+figure;
+SOC = SOC_V(V);
+plot(V, SOC);
+xlabel('Voltage (V)');
+ylabel('State of charge (SOC)');
+title('Downsampled Average State of Charge vs. Voltage');
 
 %% 3. Calculate the gradient dSOC_dV
 dSOC_dV = gradient(S, V);
 
-% % Plotting
-% figure;
-% plot(V, dSOC_dV);
-% xlabel('Voltage (V)');
-% ylabel('dSOC/dV');
-% title('dSOC/dV vs. Voltage');
+% Plotting
+figure;
+plot(V, dSOC_dV);
+xlabel('Voltage (V)');
+ylabel('dSOC/dV');
+title('dSOC/dV vs. Voltage');
 
 %% 3-1. Gaussian Filter
 sigma = ds * 2 + 1; % Standard deviation for Gaussian kernel

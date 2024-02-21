@@ -3,10 +3,11 @@ function params = subfunctions(params)
 % Find the relevant subfunctions in the Code/Models/MODEL/subfunctions
 % folder and in Code/Common/Functions.
 
-% OCV function
-params.MSMR = true;
-params = MSMR_OCV_function(params);
+% Equilibrium potentials
+[params.UnFun, params.UpFun] = electrode_potentials(params);
 
+% Surface overpotentials
+[params.etan, params.etap] = reaction_overpotentials(params);
 
 % Turn off model plotting
 params.plot_model = false;

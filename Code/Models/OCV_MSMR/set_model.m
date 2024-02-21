@@ -20,7 +20,7 @@ function [Model, params] = set_model(ModelName,params,j)
 
 % Define an initial guess and uncertainty for each unknown parameter
 guess = [1/Q; nu; miu];
-uncert = [0.1; 0; 0];
+uncert = [1; 0; 0];
 
 % Set the rescaling factor and scale the initial guesses
 fac = 2*guess;
@@ -28,8 +28,6 @@ c0 = guess./fac;
 
 % write OCV as a function of c
 % number of equations: number of peaks appearing in the derivatives
-
-
 
 % Compile parameters into vector
 c = {c0(1); c0(2); c0(3); ... [1-3] length of guess

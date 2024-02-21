@@ -37,19 +37,19 @@ addpath(genpath(strcat('./BatEst/Code/Models/',ModelName)));
 addpath(genpath(strcat('./BatEst/Code/Methods/',Estimator)));
 
 % Define dimensionless model
-[Model, params] = step0(ModelName,3,input_params);
+[Model, params] = step0(ModelName,1,input_params);
 Model.Noise = false; % true or false
 params.cycle_step = cycle_step;
 params.DataType = DataType;
 
 % Load or generate data
-[true_sol, params] = step1(Target,Model,params,3,Dataset);
+[true_sol, params] = step1(Target,Model,params,1,Dataset);
 
 % Perform estimation and update parameter values
-[est_sol,  params] = step2(Target,Model,params,3);
+[est_sol,  params] = step2(Target,Model,params,1);
 
 % Run simulation using updated parameters
-[pred_sol, params] = step3(Target,Model,params,3,est_sol);
+[pred_sol, params] = step3(Target,Model,params,1,est_sol);
 
 % Compare prediction and data
 params = step4(Target,params,true_sol,pred_sol);

@@ -111,7 +111,10 @@ if verbose
 end
 if abs(data.Current_A(i))<0.02 && isfield(params, 'MSMR')
     % Assume measurement starts at SOC = 0
-    [X_init, S_init] = deal(initial_SOC(params,V_init,0));
+    [X_init, S_init] = deal(initial_SOC(params,V_init,0.05));
+    if X_init < 0
+        X_init = 0; S_init = 0;
+    end
     if verbose
         disp(['The corresponding SOC estimate is ' num2str(X_init) '.']);
     end
