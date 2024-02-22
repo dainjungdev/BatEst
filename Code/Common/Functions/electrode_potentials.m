@@ -52,6 +52,7 @@ if plot_model
     x = unique([x,1-x]);
     plot(x,UnFun(x),'b','DisplayName','Negative electrode OCP');
     plot(x,UpFun(x,1,1),'r','DisplayName','Positive electrode OCP');
+    plot(x,UpFun(x,1,1)-UnFun(x),'g','DisplayName','OCP function')
     xlabel('State of charge');
     ylabel('Voltage (V)')
     legend('Location','best');

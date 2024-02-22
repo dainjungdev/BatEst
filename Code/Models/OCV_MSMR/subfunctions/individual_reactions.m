@@ -20,7 +20,7 @@ function [xj, dxjdu] = individual_reactions(U, U0, Xj, w, T)
     % Constants
     Rg = 8.314472;  % gas constant (J mol-1 K-1)
     F = 96487;     % Faraday's constant (C mol-1)
-
+    T = 298.15;
     f = F / (Rg * T);  % F/RT
 
     % Fractional occupancy (xj)
