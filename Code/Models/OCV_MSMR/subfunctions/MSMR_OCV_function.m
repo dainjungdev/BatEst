@@ -46,12 +46,6 @@ U = [0, U];
 
 spl = pchip(X, U);
 OCV = @(x, nu, miu) ppval(spl, x);
-% % Create a spline representation
-% spl = spline(1-X, U);
-% OCV = @(x, nu, miu) max(0, min(4.2, ppval(spl, x))); % Ensure OCV is within the voltage range [2.5, 4.2]
-
-% Assuming 1-X and U are your data vectors
-% OCV = @(x, nu, miu) max(1.5, min(4.2, interp1(1-X, U, x, 'linear', 'extrap')));
 
 % SOC vs Voltage
 if plot_model

@@ -1,4 +1,4 @@
-function [V, S, dSOC_dV] = identify_peak(OCP_filename)
+function [V, S, dSOC_dV, real_dSOC_dV] = identify_peak(OCP_filename)
 % dQ/dV
 close all;
 generate_plot = false;
@@ -38,19 +38,25 @@ if generate_plot
     title('State of Charge vs. Voltage');
 end
 
-%% 3. Downsample voltage
-% Step 1: Downsampling
-lt = 1500;  % about 1500 data points
-ds = max(floor(length(V)/lt),1);  % Example downsampling factor, adjust as needed
-% S = movmean(S, ds);
-downsampledIndices = 1:ds:length(V); % Indices of the downsampled data
+V_S = @(v) ppval(pchip(V, S), v);
+ds = length(V) / 1000;
+V = linspace(min(V), max(V), 1000);
+S = V_S(V);
 
-% Downsampled data
-V = V(downsampledIndices);
-S = S(downsampledIndices);
+% %% 3. Downsample voltage
+% % Step 1: Downsampling
+% lt = 1500;  % about 1500 data points
+% ds = max(floor(length(V)/lt),1);  % Example downsampling factor, adjust as needed
+% % S = movmean(S, ds);
+% downsampledIndices = 1:ds:length(V); % Indices of the downsampled data
+% 
+% % Downsampled data
+% V = V(downsampledIndices);
+% S = S(downsampledIndices);
 
 %% 3. Calculate the gradient dSOC_dV
 dSOC_dV = gradient(S, V);
+real_dSOC_dV = dSOC_dV;
 
 % Plotting
 if generate_plot
