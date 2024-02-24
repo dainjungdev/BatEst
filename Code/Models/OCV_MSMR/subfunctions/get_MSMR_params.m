@@ -1,4 +1,4 @@
-function [MSMR_parameters, RMSE] = get_MSMR_parameters(OCP_filename)
+function [MSMR_parameters, RMSE] = get_MSMR_params(OCP_filename)
 generate_plot = true;
 
 %% 0. Settings
