@@ -42,9 +42,6 @@ S_discharge = cumtrapz(T_discharge.Test_Time_s,T_discharge.Current_A);
 S_discharge = Start+(-1)^Start*S_discharge/S_discharge(end);
 V_discharge = T_discharge.Voltage_V;
 
-spl_discharge = spline(S_discharge, V_discharge);
-
-
 %% 2. Define Voltage function(x:Voltage, y:SOC)
 % Plotting
 if generate_plot
@@ -58,41 +55,50 @@ if generate_plot
     title('State of Charge vs. Voltage');
 end
 
-spl = spline(S_discharge, V_discharge);
-spl2 = spline(S_charge, V_charge);
-v_s_discharge = @(S) ppval(spl, S); v_s_charge = @(S) ppval(spl2, S);
+spl_s_v_discharge = spline(S_discharge, V_discharge);
+spl_s_v_charge = spline(S_charge, V_charge);
+v_s_discharge = @(S) ppval(spl_s_v_discharge, S); 
+v_s_charge = @(S) ppval(spl_s_v_charge, S);
 v_s = @(S) (v_s_discharge(S) + v_s_charge(S)) * 1/2;
 
-%% 2. Define Voltage function(x:Voltage, y:SOC)
+S = [0, 0.01, linspace(0.011, 1, 19998)];
+V = v_s(S);
+V_charge = v_s_charge(S);
+V_discharge = v_s_discharge(S);
+
+%% 2. Define Voltage function(x:SOC, y:Voltage)
 % Plotting
 if generate_plot
     figure;
-    plot(S_charge, V_charge, 'r');
+    plot(S, v_s_charge(S), 'r.');
     hold on;
-    plot(S_discharge, V_discharge, 'b');
-    S = linspace(0, 1, 1000);
-    plot(S, v_s(S), 'g');
+    plot(S, v_s_discharge(S), 'b.');
+    plot(S, v_s(S), 'g.');
     hold off;
     xlabel('Voltage (V)');
     ylabel('State of charge (SOC)');
     title('State of Charge vs. Voltage');
 end
 
+spl_v_s_charge = spline(V_charge, S);
+spl_v_s_discharge = spline(V_discharge, S);
+s_v_discharge = @(V) ppval(spl_v_s_discharge, V); 
+s_v_charge = @(V) ppval(spl_v_s_charge, V);
+s_v = @(V) (s_v_discharge(V) + s_v_charge(V)) * 1/2;
 
-
-%% 2-1. Downsample voltage
-lt = 2000;  % about 2000 data points
-ds = max(floor(length(V)/lt),1);  % Example downsampling factor, adjust as needed
-downsampledIndices = 1:ds:length(V); % Indices of the downsampled data
-
-% Downsampled data
-V = V(downsampledIndices);
-S = S(downsampledIndices);
-
-% Make sure that 'V' has unique value
-% Aggregate S values for each unique V
-[V, ~, ic] = unique(V); % Find unique V values and their indices
-S = accumarray(ic, S, [], @mean); % Calculate average S for each unique V
+% %% 2-1. Downsample voltage
+% lt = 2000;  % about 2000 data points
+% ds = max(floor(length(V)/lt),1);  % Example downsampling factor, adjust as needed
+% downsampledIndices = 1:ds:length(V); % Indices of the downsampled data
+% 
+% % Downsampled data
+% V = V(downsampledIndices);
+% S = S(downsampledIndices);
+% 
+% % Make sure that 'V' has unique value
+% % Aggregate S values for each unique V
+% [V, ~, ic] = unique(V); % Find unique V values and their indices
+% S = accumarray(ic, S, [], @mean); % Calculate average S for each unique V
 
 % Define the limits
 V_min = 2.5;
@@ -108,6 +114,8 @@ S = S(valid_indices);
 V_S = @(v) ppval(spline(V, S), v);
 V = linspace(min(V), max(V), 1000);
 S = V_S(V);
+
+figure; plot(V,S);
 
 % %% Downsample voltage
 % lt = 1500;  % about 1500 data points

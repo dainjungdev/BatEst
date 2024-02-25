@@ -9,7 +9,7 @@ F = 96487;     % Faraday's constant (C mol-1)
 f = F / (Rg * T);  % F/RT
 
 % Get V, dSOC_dV data
-[V, S, dSOC_dV, real_dSOC_dV] = load_dSOC_dV(OCP_filename);
+[V, S, dSOC_dV, real_dSOC_dV] = load_dSOC_dV_edit(OCP_filename);
 
 %% 1. Get initial estimates
 % Initialise the parameter vectors
@@ -47,7 +47,10 @@ for j = 1:4
         V_ref_right = findCrossing(V, dSOC_dV_to_fit, peakLoc, ref_dSOC_dV, 'right');
 
         if ~isnan(V_ref_left) && ~isnan(V_ref_right)
+            ref_distance_left = V_peak - V_ref_left;
+            ref_distance_right = V_ref_right - V_peak;
             ref_distance = (V_ref_right - V_ref_left) * 1/2;
+            ref_distance = 2/3 * min(ref_distance_left, ref_distance_right) + 1/3 * max(ref_distance_left, ref_distance_right);
             w = ref_distance * f / log(2/k - 1 + 2*sqrt(1/(k*k) - 1/k));
             w_initial(j) = (w_initial(j) * (i - 1) + w) / i;
     
@@ -134,8 +137,12 @@ initialParams = MSMR_parameters;  % Assuming MSMR_parameters is your initial gue
 % Set bounds
 A = [];
 b = [];
+A = [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0];
+b = 1;
 Aeq = [];
 beq = [];
+% Aeq = [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0];
+% beq = 1;
 % lb = zeros(size(initialParams)); % Make it positive
 lb = [2.5, 0, 0; 2.5, 0, 0; 2.5, 0, 0; 2.5, 0, 0];
 % ub = []
@@ -152,7 +159,7 @@ warning('on','MATLAB:ode15s:IntegrationTolNotMet');
 
 % Run optimisation
 [MSMR_parameters, ~] = fmincon(@(p) msmrObjective(p, V, S, real_dSOC_dV), ...
-                            initialParams, [], [], [], [], lb, ub, nonlcon, options);
+                            initialParams, A, b, Aeq, beq, lb, ub, nonlcon, options);
 
 
 % Display optimised parameters
@@ -188,11 +195,11 @@ legend;
 hold off;
 end
 
-reset_path;
-ModelName = 'OCV_MSMR';
-Estimator = 'PEM';
-addpath(genpath(strcat('./BatEst/Code/Models/',ModelName)));
-addpath(genpath(strcat('./BatEst/Code/Methods/',Estimator)));
+% reset_path;
+% ModelName = 'OCV_MSMR';
+% Estimator = 'PEM';
+% addpath(genpath(strcat('./BatEst/Code/Models/',ModelName)));
+% addpath(genpath(strcat('./BatEst/Code/Methods/',Estimator)));
 end
 
 
@@ -208,7 +215,7 @@ function rmse = msmrObjective(MSMR_parameters, V, S, dSOC_dV)
     dX_dU_MAE = mean(abs(dX_dU - dSOC_dV)) / abs(mean(dSOC_dV));
 
     % rmse = dX_dU_rmse + X_rmse;
-    rmse = dX_dU_rmse + 0.2 * X_rmse;
+    rmse = dX_dU_rmse;
 end
 
 function crossing = findCrossing(V, dSOC_dV, peakLoc, targetValue, direction)
