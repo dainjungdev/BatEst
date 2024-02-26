@@ -1,5 +1,5 @@
 function [MSMR_parameters, RMSE] = get_MSMR_params(OCP_filename)
-generate_plot = true;
+generate_plot = false;
 
 %% 0. Settings
 % Define essential constants
@@ -25,17 +25,17 @@ w_initial = zeros(1, 4);
 dSOC_dV_to_fit = dSOC_dV;
 
 % Define peak location bounds
-peakLoc_bounds = [0 1400; 1200 1600; 1400 1800; 1700 2000];
+peakLoc_bounds = [800 1300; 1200 1600; 1400 1800; 1700 2000];
 
 % Reorder bounds into desired sequence
-sequence = [2, 4, 1, 3]; % Define the sequence of rows you want
+sequence = [2, 3, 4, 1]; % Define the sequence of rows you want
 peakLoc_limits = peakLoc_bounds(sequence, :);
 
 % Loop over the number of sigmoids to fit
 for j = 1:4
     % 1) Get the first peak
     % Invert the signal to find troughs as peaks
-    [pks, locs, w, p] = findpeaks(-dSOC_dV_to_fit, 'SortStr', 'descend', 'NPeaks', 5);
+    [pks, locs, w, p] = findpeaks(-dSOC_dV_to_fit, 'SortStr', 'descend', 'NPeaks', 7);
 
     % Combine the peak information into a single matrix for easier processing
     peakInfo = [locs', (p'.^0.9).*(w'.*pks'), p', w', pks'];
@@ -82,22 +82,24 @@ for j = 1:4
             % else
             %     ref_halfpoint = V_ref_right * 11/20 + V_ref_left * 9/20;
             % end
-
+            
+            if i < 0.9 * length(range)
             U0_adjustment = (U0_adjustment * (i - 1) + ref_halfpoint) / i;
+            end
 
         elseif ~isnan(V_ref_left)
             ref_distance = V_peak - V_ref_left;
             w = ref_distance * f / log(2/k - 1 + 2*sqrt(1/(k*k) - 1/k));
             counter = counter + 1;
             w_initial(j) = (w_initial(j) * (i - 1/2 - 1/2 * counter) + w * 1/2) / (i - 1/2 * counter);
-            if counter >= min(length(range) - i, max(10, length(i) * 2/3)) break; end
+            if counter >= min(length(range) - i, max(10, i * 2/3)) break; end
 
         elseif ~isnan(V_ref_right)
             ref_distance = V_ref_right - V_peak;
             w = ref_distance * f / log(2/k - 1 + 2*sqrt(1/(k*k) - 1/k));
             counter = counter + 1;
             w_initial(j) = (w_initial(j) * (i - 1/2 - 1/2 * counter) + w * 1/2) / (i - 1/2 * counter);
-            if counter >= min(length(range) - i, max(10, length(i) * 2/3)) break; end
+            if counter >= min(length(range) - i, max(10, i * 2/3)) break; end
 
         else
             break;
@@ -134,6 +136,8 @@ end
 MSMR_parameters = [U0_initial(:), Q_initial(:), w_initial(:)];
 MSMR_parameters = sortrows(MSMR_parameters, 1);
 disp(MSMR_parameters)
+RMSE = msmrObjective(MSMR_parameters, V, S, real_dSOC_dV, 'dxdu_rmse');
+fprintf('RMSE: %.12f\n', RMSE);
 num_reactions = size(MSMR_parameters, 1);
 
 %% 2. Generate plots for initial parameters
@@ -210,17 +214,19 @@ initialParams = MSMR_parameters;  % Assuming MSMR_parameters is your initial gue
 % Set bounds
 A = [];
 b = [];
-% A = [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0];
-% b = 1;
-Aeq = [];
-beq = [];
-% Aeq = [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0];
-% beq = 1;
-% lb = zeros(size(initialParams)); % Make it positive
-lb = [2.5, 0, 0; 2.5, 0, 0; 2.5, 0, 0; 2.5, 0, 0];
+A = [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0];
+b = 1;
+Aeq = []; % Aeq = [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0];
+beq = []; % beq = 1;
+lb = zeros(size(initialParams)); % Make it positive
+% lb(:,1) = initialParams(:,1) * 0.95;
+% lb = [2.5, 0, 0; 2.5, 0, 0; 2.5, 0, 0; 2.5, 0, 0];
 % lb = [3.1, 0, 0; 3.4, 0, 0; 3.7, 0, 0; 3.95, 0, 0];
-% ub = []
-ub = [4.2, Inf, Inf; 4.2, Inf, Inf; 4.2, Inf, Inf; 4.2, Inf, Inf];
+% ub = [];
+ub = Inf(size(initialParams));
+% ub(:,1) = initialParams(:,1) * 1.05;
+% ub(:,1) = initialParams(:,1) * 1.2;
+% ub = [4.2, Inf, Inf; 4.2, Inf, Inf; 4.2, Inf, Inf; 4.2, Inf, Inf];
 % ub = [3.5, Inf, Inf; 3.8, Inf, Inf; 4.05, Inf, Inf; 4.2, Inf, Inf];
 nonlcon = [];
 

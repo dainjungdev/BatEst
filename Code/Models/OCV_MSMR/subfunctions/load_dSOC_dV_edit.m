@@ -1,7 +1,7 @@
 function [V, S, dSOC_dV, real_dSOC_dV, V_ext, dSOC_dV_ext] = load_dSOC_dV_edit(OCP_filename)
 % dQ/dV
 close all;
-generate_plot = true;
+generate_plot = false;
 
 %% 1. Load S & V
 % Load the dataset
@@ -181,38 +181,20 @@ for j = 1:200
     dSOC_dV_arr(j,end) = (S(end) - S(end-1)) / (V(end) - V(end-1));
 end
 
-% for i = 1:length(S)
-%     dSOC_dV_arr(:, i) = imgaussfilt(dSOC_dV_arr(:, i), 3);
-% end
+real_dSOC_dV = mean(dSOC_dV_arr(20:50,:));
+dSOC_dV = mean(dSOC_dV_arr(20:100,:));
 
-real_dSOC_dV_weights = linspace(1, 0, length(20:200)); % Linear weights from 1 to 0
-real_dSOC_dV_weights = real_dSOC_dV_weights / sum(real_dSOC_dV_weights); % Normalize weights
-real_dSOC_dV = sum(dSOC_dV_arr(20:200,:).* real_dSOC_dV_weights');
-
-% dSOC_dV_weights = linspace(1, 1.5, length(10:300)); % Linear weights from 1 to 1.5
-% dSOC_dV_weights = dSOC_dV_weights / sum(dSOC_dV_weights); % Normalize weights
-% dSOC_dV = sum(dSOC_dV_arr(10:300,:).* dSOC_dV_weights');
-
-real_dSOC_dV = mean(dSOC_dV_arr(20:200,:));
-dSOC_dV = mean(dSOC_dV_arr(20:200,:));
-
-% dSOC_dV_weights = linspace(2, 1, length(20:200)); % Linear weights from 1 to 1.5
-% dSOC_dV_weights = dSOC_dV_weights / sum(dSOC_dV_weights); % Normalize weights
-% dSOC_dV = sum(dSOC_dV_arr(20:200,:).* dSOC_dV_weights');
-
+% % 3-1. Gaussian Filter
+% sigma = 3; % Standard deviation for Gaussian kernel
+% dSOC_dV = imgaussfilt(dSOC_dV, sigma, 'FilterSize', 21);
 
 V = V(1:10:end);
 S = S(1:10:end);
-
-% 3-1. Gaussian Filter
-sigma = 10; % Standard deviation for Gaussian kernel
-dSOC_dV = imgaussfilt(dSOC_dV, sigma, 'FilterSize', 21);
-
 dSOC_dV = dSOC_dV(1:10:end);
 real_dSOC_dV = real_dSOC_dV(1:10:end);
 
 % Sgolay filter
-polyOrder = 5; windowSize = 101;
+polyOrder = 3; windowSize = 71;
 dSOC_dV = sgolayfilt(dSOC_dV, polyOrder, windowSize);
 
 % Plot the gradient
@@ -226,6 +208,23 @@ if generate_plot
     ylabel('dSOC/dV');
     title('Calculated Gradient with Increased Interval');
 end
+
+%% Check limits
+% Define the limits
+V_min = 2.5;
+V_max = 4.1;
+
+% Find indices where V is within the specified range
+valid_indices = V >= V_min & V <= V_max;
+
+% Limit V and S to these indices
+V = V(valid_indices);
+S = S(valid_indices);
+dSOC_dV = dSOC_dV(valid_indices);
+real_dSOC_dV = real_dSOC_dV(valid_indices);
+
+
+
 
 % %% 3-1. Gaussian Filter
 % sigma = 1; % Standard deviation for Gaussian kernel
