@@ -1,4 +1,4 @@
-function [V, S, dSOC_dV, real_dSOC_dV] = load_dSOC_dV_edit(OCP_filename)
+function [V, S, dSOC_dV, real_dSOC_dV, V_ext, dSOC_dV_ext] = load_dSOC_dV_edit(OCP_filename)
 % dQ/dV
 close all;
 generate_plot = false;
@@ -42,8 +42,23 @@ if generate_plot
     title('Voltage vs. State of Charge');
 end
 
-
 %% 3. Pre-processing
+%% Filter non-unique indices
+% Find unique values in V and their indices, and count of each V
+[S_unique, ~, ic] = unique(S);
+counts = accumarray(ic, 1);
+
+% Find V values that occur exactly once
+S_single_occurrence = S_unique(counts == 1);
+
+% Find indices of V that correspond to V values occurring exactly once
+idx_single_occurrence = ismember(S, S_single_occurrence);
+
+% Filter V and S to keep only those with V values occurring exactly once
+V = V(idx_single_occurrence);
+S = S(idx_single_occurrence);
+
+%% Downsampling
 spl_s_v = pchip(S, V);
 s_v = @(S) ppval(spl_s_v, S);
 % S = linspace(0, 1, 5000);
@@ -144,11 +159,11 @@ S = V_S(V);
 
 %% 3. Calculate Gradient
 % Preallocate the gradient array
-dSOC_dV_arr = zeros(100, size(S,2));
+dSOC_dV_arr = zeros(500, size(S,2));
 
-for j = 1:200
+for j = 1:500
     % Interval size
-    interval = j+24; % Adjust based on your data and desired smoothing
+    interval = j; % Adjust based on your data and desired smoothing
     
     dSOC_dV_arr(j,1) = (S(2) - S(1)) / (V(2) - V(1));
     for i = 2:interval
@@ -166,27 +181,41 @@ for j = 1:200
     dSOC_dV_arr(j,end) = (S(end) - S(end-1)) / (V(end) - V(end-1));
 end
 
-real_dSOC_dV = mean(dSOC_dV_arr(1:50,:));
-dSOC_dV = mean(dSOC_dV_arr(50:end,:));
+real_dSOC_dV_weights = linspace(1, 0, length(20:200)); % Linear weights from 1 to 0
+real_dSOC_dV_weights = real_dSOC_dV_weights / sum(real_dSOC_dV_weights); % Normalize weights
+real_dSOC_dV = sum(dSOC_dV_arr(20:200,:).* real_dSOC_dV_weights');
+
+dSOC_dV_weights = linspace(1, 1.5, length(10:500)); % Linear weights from 1 to 0
+dSOC_dV_weights = dSOC_dV_weights / sum(dSOC_dV_weights); % Normalize weights
+dSOC_dV = sum(dSOC_dV_arr(10:500,:).* dSOC_dV_weights');
+
+% real_dSOC_dV = mean(dSOC_dV_arr(20:100,:));
+% dSOC_dV = mean(dSOC_dV_arr(150:300,:));
 
 V = V(1:10:end);
 S = S(1:10:end);
+
+
+%% 3-1. Gaussian Filter
+sigma = 20; % Standard deviation for Gaussian kernel
+dSOC_dV = imgaussfilt(dSOC_dV, sigma, 'FilterSize', 61);
+
 dSOC_dV = dSOC_dV(1:10:end);
 real_dSOC_dV = real_dSOC_dV(1:10:end);
 
 % Plot the gradient
 if generate_plot
     figure;
-    plot(V, dSOC_dV, 'r'); hold on;
-    plot(V, real_dSOC_dV, 'g');
+    plot(V, real_dSOC_dV, 'r'); hold on;
+    plot(V, dSOC_dV, 'g');
     xlabel('Voltage (V)');
     ylabel('dSOC/dV');
     title('Calculated Gradient with Increased Interval');
 end
 
-%% 3-1. Gaussian Filter
-sigma = 3; % Standard deviation for Gaussian kernel
-dSOC_dV = imgaussfilt(dSOC_dV, sigma, "FilterSize", 11);
+% %% 3-1. Gaussian Filter
+% sigma = 1; % Standard deviation for Gaussian kernel
+% dSOC_dV = imgaussfilt(dSOC_dV, sigma);
 
 % Plotting
 if generate_plot
@@ -197,4 +226,5 @@ if generate_plot
     ylabel('dSOC/dV');
     title('dSOC/dV(Gaussian Filtered) vs. Voltage');
 end
+
 end
