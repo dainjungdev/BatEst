@@ -1,5 +1,5 @@
 function [MSMR_parameters, RMSE] = get_MSMR_params(OCP_filename)
-generate_plot = false;
+generate_plot = true;
 
 %% 0. Settings
 % Define essential constants
@@ -24,15 +24,31 @@ w_initial = zeros(1, 4);
 
 dSOC_dV_to_fit = dSOC_dV;
 
+% Define peak location bounds
+peakLoc_bounds = [0 1400; 1200 1600; 1400 1800; 1700 2000];
+
+% Reorder bounds into desired sequence
+sequence = [2, 4, 1, 3]; % Define the sequence of rows you want
+peakLoc_limits = peakLoc_bounds(sequence, :);
+
 % Loop over the number of sigmoids to fit
 for j = 1:4
     % 1) Get the first peak
     % Invert the signal to find troughs as peaks
     [pks, locs, w, p] = findpeaks(-dSOC_dV_to_fit, 'SortStr', 'descend', 'NPeaks', 5);
 
-    peakLocs = [locs', (p'.^0.9).*(w'.*pks'), p', w', pks'];
-    peakLocs = sortrows(peakLocs, 2, 'descend');
-    peakLoc = peakLocs(1);
+    % Combine the peak information into a single matrix for easier processing
+    peakInfo = [locs', (p'.^0.9).*(w'.*pks'), p', w', pks'];
+    
+    % Filter the peaks based on their locations (1200 to 1800)
+    peakLoc_limit = peakLoc_limits(j,:);
+    filteredPeakInfo = peakInfo(peakInfo(:,1) >= peakLoc_limit(1) & peakInfo(:,1) <= peakLoc_limit(2), :);
+    
+    if ~isempty(filteredPeakInfo)
+        peakLoc = filteredPeakInfo(1);
+    else
+        peakLoc = peakInfo(1);
+    end
 
     V_peak = V(peakLoc);
     dSOC_dV_peak = dSOC_dV_to_fit(peakLoc);
@@ -60,12 +76,12 @@ for j = 1:4
             w = ref_distance * f / log(2/k - 1 + 2*sqrt(1/(k*k) - 1/k));
             w_initial(j) = (w_initial(j) * (i - 1) + w) / i;
     
-            % ref_halfpoint = (V_ref_right + V_ref_left) * 1/2;
-            if ref_distance_left < ref_distance_right
-                ref_halfpoint = V_ref_right * 9/20 + V_ref_left * 11/20;
-            else
-                ref_halfpoint = V_ref_right * 11/20 + V_ref_left * 9/20;
-            end
+            ref_halfpoint = (V_ref_right + V_ref_left) * 1/2;
+            % if ref_distance_left < ref_distance_right
+            %     ref_halfpoint = V_ref_right * 9/20 + V_ref_left * 11/20;
+            % else
+            %     ref_halfpoint = V_ref_right * 11/20 + V_ref_left * 9/20;
+            % end
 
             U0_adjustment = (U0_adjustment * (i - 1) + ref_halfpoint) / i;
 
@@ -93,7 +109,7 @@ for j = 1:4
     w_initial(j) = w_initial(j) / (1 - (0.2)^(j+1));
 
     % Adjust position of U0_initial
-    U0_initial(j) = (U0_adjustment + U0_initial(j)) * 1/2;
+    U0_initial(j) = (U0_adjustment*(i) + U0_initial(j)*length(range)/2) / (i+length(range)/2);
 
     % 3) compute Q_initial
     Q_initial(j) = dSOC_dV_peak * (-4) * w_initial(j) / f; 

@@ -1,7 +1,7 @@
 function [V, S, dSOC_dV, real_dSOC_dV, V_ext, dSOC_dV_ext] = load_dSOC_dV_edit(OCP_filename)
 % dQ/dV
 close all;
-generate_plot = false;
+generate_plot = true;
 
 %% 1. Load S & V
 % Load the dataset
@@ -159,9 +159,9 @@ S = V_S(V);
 
 %% 3. Calculate Gradient
 % Preallocate the gradient array
-dSOC_dV_arr = zeros(500, size(S,2));
+dSOC_dV_arr = zeros(200, size(S,2));
 
-for j = 1:500
+for j = 1:200
     % Interval size
     interval = j; % Adjust based on your data and desired smoothing
     
@@ -181,33 +181,47 @@ for j = 1:500
     dSOC_dV_arr(j,end) = (S(end) - S(end-1)) / (V(end) - V(end-1));
 end
 
+% for i = 1:length(S)
+%     dSOC_dV_arr(:, i) = imgaussfilt(dSOC_dV_arr(:, i), 3);
+% end
+
 real_dSOC_dV_weights = linspace(1, 0, length(20:200)); % Linear weights from 1 to 0
 real_dSOC_dV_weights = real_dSOC_dV_weights / sum(real_dSOC_dV_weights); % Normalize weights
 real_dSOC_dV = sum(dSOC_dV_arr(20:200,:).* real_dSOC_dV_weights');
 
-dSOC_dV_weights = linspace(1, 1.5, length(10:500)); % Linear weights from 1 to 0
-dSOC_dV_weights = dSOC_dV_weights / sum(dSOC_dV_weights); % Normalize weights
-dSOC_dV = sum(dSOC_dV_arr(10:500,:).* dSOC_dV_weights');
+% dSOC_dV_weights = linspace(1, 1.5, length(10:300)); % Linear weights from 1 to 1.5
+% dSOC_dV_weights = dSOC_dV_weights / sum(dSOC_dV_weights); % Normalize weights
+% dSOC_dV = sum(dSOC_dV_arr(10:300,:).* dSOC_dV_weights');
 
-% real_dSOC_dV = mean(dSOC_dV_arr(20:100,:));
-% dSOC_dV = mean(dSOC_dV_arr(150:300,:));
+real_dSOC_dV = mean(dSOC_dV_arr(20:200,:));
+dSOC_dV = mean(dSOC_dV_arr(20:200,:));
+
+% dSOC_dV_weights = linspace(2, 1, length(20:200)); % Linear weights from 1 to 1.5
+% dSOC_dV_weights = dSOC_dV_weights / sum(dSOC_dV_weights); % Normalize weights
+% dSOC_dV = sum(dSOC_dV_arr(20:200,:).* dSOC_dV_weights');
+
 
 V = V(1:10:end);
 S = S(1:10:end);
 
-
-%% 3-1. Gaussian Filter
-sigma = 20; % Standard deviation for Gaussian kernel
-dSOC_dV = imgaussfilt(dSOC_dV, sigma, 'FilterSize', 61);
+% 3-1. Gaussian Filter
+sigma = 10; % Standard deviation for Gaussian kernel
+dSOC_dV = imgaussfilt(dSOC_dV, sigma, 'FilterSize', 21);
 
 dSOC_dV = dSOC_dV(1:10:end);
 real_dSOC_dV = real_dSOC_dV(1:10:end);
 
+% Sgolay filter
+polyOrder = 5; windowSize = 101;
+dSOC_dV = sgolayfilt(dSOC_dV, polyOrder, windowSize);
+
 % Plot the gradient
 if generate_plot
     figure;
+    TF = islocalmin(dSOC_dV, 'MaxNumExtrema', 4);
     plot(V, real_dSOC_dV, 'r'); hold on;
     plot(V, dSOC_dV, 'g');
+    plot(V(TF), dSOC_dV(TF), 'r*');
     xlabel('Voltage (V)');
     ylabel('dSOC/dV');
     title('Calculated Gradient with Increased Interval');
@@ -217,14 +231,18 @@ end
 % sigma = 1; % Standard deviation for Gaussian kernel
 % dSOC_dV = imgaussfilt(dSOC_dV, sigma);
 
-% Plotting
-if generate_plot
-    figure;
-    TF = islocalmin(dSOC_dV, 'MaxNumExtrema', 4);
-    plot(V, dSOC_dV, V(TF), dSOC_dV(TF), 'r*');
-    xlabel('Voltage (V)');
-    ylabel('dSOC/dV');
-    title('dSOC/dV(Gaussian Filtered) vs. Voltage');
-end
+% polyOrder = 5; windowSize = 51;
+% dSOC_dV = sgolayfilt(dSOC_dV, polyOrder, windowSize);
+
+% % Plotting
+% if generate_plot
+%     figure;
+%     TF = islocalmin(dSOC_dV, 'MaxNumExtrema', 4);
+%     plot(V, dSOC_dV, V(TF), dSOC_dV(TF), 'r*'); hold on;
+%     plot(V, real_dSOC_dV);
+%     xlabel('Voltage (V)');
+%     ylabel('dSOC/dV');
+%     title('dSOC/dV(Gaussian Filtered) vs. Voltage');
+% end
 
 end
