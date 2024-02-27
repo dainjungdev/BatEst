@@ -16,7 +16,17 @@ for i = 1:num_reactions
     [xj{i}, dxj_du{i}] = individual_reactions_function(U0, Xj_tot, omega, T);
 end
 
-% Add the function handles
-x = @(x) xj{1}(x) + xj{2}(x) + xj{3}(x) + xj{4}(x);
-dx_du = @(x) dxj_du{1}(x) + dxj_du{2}(x) + dxj_du{3}(x) + dxj_du{4}(x);
+% Initialize the function handles to zero functions
+x = @(x) 0;
+dx_du = @(x) 0;
+
+% Loop through each reaction and add the function handles
+for i = 1:num_reactions
+    % Capture the current state of x and dx_du in the loop to avoid referencing issues
+    current_x = x;
+    current_dx_du = dx_du;
+    x = @(x) current_x(x) + xj{i}(x);
+    dx_du = @(x) current_dx_du(x) + dxj_du{i}(x);
+end
+
 end
