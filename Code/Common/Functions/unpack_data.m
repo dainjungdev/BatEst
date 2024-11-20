@@ -49,14 +49,89 @@ if tpoints(end)-tpoints(1) > 50*3600
 end
 
 
-% Optional down-sampling to reduce the number of datapoints
-% if j == 1 target = 1500;
-% elseif j == 2 target = 600;
-% elseif j == 3 target = 2400;
+%% Compute initial values and throughtput
+% Preallocate initial states
+X_init = []; S_init = []; T_init = [];
+
+
+% Pass on initial voltage and temperature
+i = max(1,start-1);
+V_init = data.Voltage_V(i);
+if verbose
+    disp(['Starting voltage is ' num2str(V_init) ' V.']);
+end
+if ismember('Temperature_C', data.Properties.VariableNames)
+    T_init = data.Temperature_C(i);
+    if verbose
+        disp(['And surface temperature is ' num2str(T_init) ' C.']);
+    end
+end
+
+
+% Estimate initial states
+if strcmp(DataType,'Relaxation')
+    % Assume zero current and determine from terminal voltage
+    X_init = initial_SOC(params,data.Voltage_V(finish),0.03);
+    S_init = initial_CSC(params,data.Voltage_V(start),X_init);
+    sol.CE = 1;
+elseif abs(data.Current_A(i))<0.05 || contains(DataType,'OCV')
+    % Assume measurement starts at steady state
+    [X_init, S_init] = deal(initial_SOC(params,V_init,0.5));
+end
+if verbose && any(X_init)
+    disp(['The corresponding SOC estimate is ' num2str(X_init) '.']);
+end
+
+
+% Compute charge throughput
+QT = trapz(data.Test_Time_s(start:finish),data.Current_A(start:finish));
+if verbose
+    disp(['The total charge throughput is ' num2str(QT/Qn) ' Q.']);
+end
+
+
+% % Unpack sample data into solution structure
+% % Optional down-sampling to reduce the number of datapoints to target length
+% if (contains(DataType,'charge') && ~contains(DataType,'OCV')) ...
+%         || strcmp(DataType,'Cycling')
+%     target = 1800;
+% else
+%     target = 900;
 % end
-target = 900;
-ds = max(floor(length(tpoints)/target),1);
+% ds = max(floor(length(tpoints)/target),1);
+% 
+%
+% % Code for main_multi test
+% if strcmp(DataType,'Pseudo-OCV charge') %% Pseudo-OCV(step10) 80000
+%     ds = 200;
+% elseif strcmp(DataType,'Relaxation') %% Relaxation(step9) 1800
+%     ds = 10;
+% elseif strcmp(DataType,'Relaxation') %% Relaxation(step5) 3600
+%     ds = 20;
+% elseif strcmp(DataType,'CCCV charge') %% CCCV(step6) 10000
+%     ds = 10;
+% else
+%     ds = 10;
+% end
+
+
+% Code for main_multi test
+if strcmp(DataType,'Pseudo-OCV charge') %% Pseudo-OCV(step10) 80000
+    target = 1000;
+    ds = max(floor(length(tpoints)/target),1);
+elseif strcmp(DataType,'Relaxation') %% Relaxation(step5) 3600
+    ds = 4;
+elseif strcmp(DataType,'CCCV charge') %% CCCV(step6) 10000
+    ds = 8;
+else
+    target = 900;
+    ds = max(floor(length(tpoints)/target),1);
+end
+
 tpoints = tpoints(1:ds:end);
+
+
+
 
 % Unpack data from table
 tsol(:,1) = data.Test_Time_s(tpoints)-data.Test_Time_s(tpoints(1));
@@ -95,20 +170,8 @@ sol.xsol = NaN(length(it),length(X0));
 sol.DataType = DataType;
 
 
-%% Extract further information from the dataset
 
-% Compute charge throughput
-QT = trapz(data.Test_Time_s(start:finish),data.Current_A(start:finish));
-if verbose
-    disp(['The total charge throughput is ' num2str(QT/Qn) ' Q.']);
-end
 
-% Pass on initial voltage and temperature
-i = max(1,start-1);
-V_init = data.Voltage_V(i);
-if verbose
-    disp(['Starting voltage is ' num2str(V_init) ' V.']);
-end
 
 % if abs(data.Current_A(i))<0.02 && isfield(params, 'MSMR')
 %     % Assume measurement starts at SOC = 0
@@ -120,51 +183,104 @@ end
 %         disp(['The corresponding SOC estimate is ' num2str(X_init) '.']);
 %     end
 
-if abs(data.Current_A(i))<0.02
-    % Assume measurement starts at steady state
-    [X_init, S_init] = deal(initial_SOC(params,V_init,0.5));
-    if verbose
-        disp(['The corresponding SOC estimate is ' num2str(X_init) '.']);
-    end
-else
-    % Do not pass any SOC estimate
-    [X_init, S_init] = deal(NaN);
-end
+
+
+
+
+% if abs(data.Current_A(i))<0.02
+%     % Assume measurement starts at steady state
+%     [X_init, S_init] = deal(initial_SOC(params,V_init,0.5));
+%     if verbose
+%         disp(['The corresponding SOC estimate is ' num2str(X_init) '.']);
+%     end
+% else
+%     % Do not pass any SOC estimate
+%     [X_init, S_init] = deal(NaN);
+% end
+
+
 if length(X0)==1
     sol.xsol(1,1) = X_init;
 else
     sol.xsol(1,1:2) = [X_init, S_init];
 end
-T_init = data.Temperature_C(i);
-if verbose
-    disp(['And surface temperature is ' num2str(T_init) ' C.']);
-end
 
-% Pass on model parameters
-if contains(DataType,'charge') && ~contains(DataType,'OCV')
-    % Determine initial states from terminal voltage
-    relax_end = start+find((data(start+1:end,:).Cycle_Index==cycle) ...
-                        .*(data(start+1:end,:).Step_Index==step_end+1),1,'last');
+% 
+% T_init = data.Temperature_C(i);
+% if verbose
+%     disp(['And surface temperature is ' num2str(T_init) ' C.']);
+% end
+
+
+
+
+%% Extract further information from the dataset
+
+% % Pass on model parameters
+% if contains(DataType,'charge') && ~contains(DataType,'OCV')
+%     % Determine initial states from terminal voltage
+%     relax_end = start+find((data(start+1:end,:).Cycle_Index==cycle) ...
+%                         .*(data(start+1:end,:).Step_Index==step_end+1),1,'last');
+%     V_end = data.Voltage_V(relax_end);
+%     X_end = initial_SOC(params,V_end,0.9);
+%     X_input = X_end-X_init;
+%     sol.CE = QT/(X_input*Qn); % coulombic efficiency
+%     if verbose
+%         disp(['Coulombic efficiency of ' num2str(sol.CE)]);
+%     end
+% elseif strcmp(DataType,'Relaxation')
+%     % Estimate initial states from terminal voltage
+%     X_init = initial_SOC(params,data.Voltage_V(finish),0.1);
+%     S_init = initial_CSC(params,data.Voltage_V(start),X_init);
+%     sol.CE = 1;
+%     % Use the average temperature as reference
+%     if ismember('External_Temp_C', data.Properties.VariableNames)
+%         sol.Tref = mean(data.External_Temp_C(tpoints))+CtoK;
+%         if verbose
+%             disp(['Reference temperature is ' num2str(sol.Tref) ' K']);
+%         end
+%     end
+% end
+
+
+
+
+% Estimate the "coulombic efficiency" (CE)
+if contains(DataType,'CV charge') && ~contains(DataType,'OCV')
+    % Include any relaxation period after subset of data
+    trailing_current = [data.Current_A(finish+1:end); 1];
+    relax_end = finish+find(trailing_current~=0,1,'first')-1;
     V_end = data.Voltage_V(relax_end);
     X_end = initial_SOC(params,V_end,0.9);
+    QT = trapz(data.Test_Time_s(i:relax_end),data.Current_A(i:relax_end));
+    % Determine CE from change between equilibrium states
     X_input = X_end-X_init;
-    sol.CE = QT/(X_input*Qn); % coulombic efficiency
+    CE = X_input*Qn/QT;
     if verbose
-        disp(['Coulombic efficiency of ' num2str(sol.CE)]);
+        disp(['Coulombic efficiency of ' num2str(CE)]);
     end
-elseif strcmp(DataType,'Relaxation')
-    % Estimate initial states from terminal voltage
-    X_init = initial_SOC(params,data.Voltage_V(finish),0.1);
-    S_init = initial_CSC(params,data.Voltage_V(start),X_init);
-    sol.CE = 1;
-    % Use the average temperature as reference
-    if ismember('External_Temp_C', data.Properties.VariableNames)
-        sol.Tref = mean(data.External_Temp_C(tpoints))+CtoK;
-        if verbose
-            disp(['Reference temperature is ' num2str(sol.Tref) ' K']);
-        end
+    if any(CE)
+        sol.CE = CE;
     end
 end
+
+
+% Use the average external temperature as the ambient temperature
+if strcmp(DataType,'Relaxation') ...
+        && ismember('External_Temp_C', data.Properties.VariableNames)
+    sol.Tamb = mean(data.External_Temp_C(tpoints))+CtoK;
+    sol.Tref = mean(data.External_Temp_C(tpoints))+CtoK;
+    if verbose
+        disp(['Average ambient temperature is ' num2str(sol.Tamb) ' K']);
+    end
+end
+
+
+
+% Rescale and pass on initial state estimates
+if any(X_init), sol.init.X = X_init; end
+if any(S_init), sol.init.S = S_init; end
+if any(T_init), sol.init.T = (T_init+CtoK-TtoK)/Trng; end
 
 
 end

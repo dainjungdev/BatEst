@@ -1,5 +1,5 @@
 function [MSMR_parameters, RMSE] = get_MSMR_params(OCP_filename)
-generate_plot = false;
+generate_plot = true;
 
 %% 0. Settings
 % Define essential constants
@@ -9,7 +9,7 @@ F = 96487;     % Faraday's constant (C mol-1)
 f = F / (Rg * T);  % F/RT
 
 % Get V, dSOC_dV data
-[V, S, dSOC_dV, real_dSOC_dV] = load_dSOC_dV_edit(OCP_filename);
+[V, S, dSOC_dV, real_dSOC_dV] = load_dSOC_dV(OCP_filename);
 % V = [V_ext, V];
 % S = [ones(1, length(V_ext)), S];
 % dSOC_dV = [dSOC_dV_ext, dSOC_dV];
@@ -25,8 +25,8 @@ w_initial = zeros(1, 4);
 dSOC_dV_to_fit = dSOC_dV;
 
 % Define peak location bounds
-peakLoc_bounds = [800 1300; 1200 1600; 1400 1800; 1700 2000];
-
+peakLoc_bounds = [500 1200; 1200 1400; 1400 1800; 1700 2000];
+peakLoc_bounds = [300 750; 750 1200; 1200 1600; 1500 2000];
 % Reorder bounds into desired sequence
 sequence = [2, 3, 4, 1]; % Define the sequence of rows you want
 peakLoc_limits = peakLoc_bounds(sequence, :);
@@ -35,10 +35,11 @@ peakLoc_limits = peakLoc_bounds(sequence, :);
 for j = 1:4
     % 1) Get the first peak
     % Invert the signal to find troughs as peaks
-    [pks, locs, w, p] = findpeaks(-dSOC_dV_to_fit, 'SortStr', 'descend', 'NPeaks', 7);
+    [pks, locs, w, p] = findpeaks(-dSOC_dV_to_fit);
 
     % Combine the peak information into a single matrix for easier processing
     peakInfo = [locs', (p'.^0.9).*(w'.*pks'), p', w', pks'];
+    peakInfo = sortrows(peakInfo, 2, 'descend');
     
     % Filter the peaks based on their locations (1200 to 1800)
     peakLoc_limit = peakLoc_limits(j,:);
@@ -108,13 +109,13 @@ for j = 1:4
     end
 
     % Adjust w_initial for error
-    w_initial(j) = w_initial(j) / (1 - (0.2)^(j+1));
+    w_initial(j) = w_initial(j) / (1 - (0.1)^(j+1));
 
     % Adjust position of U0_initial
     U0_initial(j) = (U0_adjustment*(i) + U0_initial(j)*length(range)/2) / (i+length(range)/2);
 
     % 3) compute Q_initial
-    Q_initial(j) = dSOC_dV_peak * (-4) * w_initial(j) / f; 
+    Q_initial(j) = dSOC_dV_peak * (-4) * w_initial(j) * (1 - (0.1)^(j+1))/ f; 
  
     % 4) Get estimated sigmoid curve
     [Xj, dXj_dU] = individual_reactions(V, U0_initial(j), Q_initial(j), w_initial(j), T); 
@@ -214,10 +215,10 @@ initialParams = MSMR_parameters;  % Assuming MSMR_parameters is your initial gue
 % Set bounds
 A = [];
 b = [];
-A = [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0];
-b = 1;
-Aeq = []; % Aeq = [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0];
-beq = []; % beq = 1;
+Aeq = [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0];
+beq = 1;
+% Aeq = []; % Aeq = [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0];
+% beq = []; % beq = 1;
 lb = zeros(size(initialParams)); % Make it positive
 % lb(:,1) = initialParams(:,1) * 0.95;
 % lb = [2.5, 0, 0; 2.5, 0, 0; 2.5, 0, 0; 2.5, 0, 0];

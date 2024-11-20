@@ -16,7 +16,11 @@ else
     
         % Define the open-circuit voltage
         if endsWith(OCV_filename,'.parquet','IgnoreCase',true)
-            OCV = load_OCP(OCV_filename);
+            OCP = load_OCP(OCV_filename);
+            % OCV = @(soc, nu, miu) OCP(soc);
+
+
+            
         elseif endsWith(OCV_filename,'.csv','IgnoreCase',true) ...
                 || endsWith(OCV_filename,'.mat','IgnoreCase',true)
             error(['Please convert the OCP data into the Parquet file format.' ...
@@ -35,10 +39,12 @@ else
             ylabel('Voltage (V)')
         end
         
+        % OCV = @(SOC, nu, miu) OCV(miu-nu*SOC);
+
     elseif length(OCP_filename)==2
         
         % Define the OCV as the difference between the electrode OCPs
-        % UpFun = cathode potential, Unfun = anode potential
+        % UpFun = cathode potential, UnFun = anode potential
         [UnFun, UpFun] = electrode_potentials(params);
         OCV =  @(soc,nu,miu) UpFun(soc,nu,miu)-UnFun(soc);
         

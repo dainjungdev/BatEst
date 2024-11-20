@@ -1,5 +1,5 @@
-function [MSMR_parameters, RMSE] = get_MSMR_params_five_more(OCP_filename)
-generate_plot = true;
+function [MSMR_parameters, RMSE] = get_MSMR_params_charge(OCP_filename)
+generate_plot = false;
 
 %% 0. Settings
 % Define essential constants
@@ -9,17 +9,11 @@ F = 96487;     % Faraday's constant (C mol-1)
 f = F / (Rg * T);  % F/RT
 
 % Get V, dSOC_dV data
-[V, S, dSOC_dV, real_dSOC_dV] = load_dSOC_dV_edit(OCP_filename);
+[V, S, dSOC_dV, real_dSOC_dV] = load_dSOC_dV(OCP_filename);
 % V = [V_ext, V];
 % S = [ones(1, length(V_ext)), S];
 % dSOC_dV = [dSOC_dV_ext, dSOC_dV];
 % real_dSOC_dV = [dSOC_dV_ext, real_dSOC_dV];
-
-
-% V = [V_ext V];
-% S = [S_ext S];
-% dSOC_dV = [dSOC_dV_ext dSOC_dV];
-% real_dSOC_dV = [dSOC_dV_ext real_dSOC_dV];
 
 
 %% 1. Get initial estimates
@@ -31,21 +25,20 @@ w_initial = zeros(1, 4);
 dSOC_dV_to_fit = dSOC_dV;
 
 % Define peak location bounds
-peakLoc_bounds = [800 1500; 1200 1600; 1400 1800; 1700 2000; 800 1600];
-% peakLoc_bounds = peakLoc_bounds + length(V_ext);
-
+peakLoc_bounds = [300 750; 750 1200; 1200 1600; 1500 2000];
 % Reorder bounds into desired sequence
-sequence = [2, 3, 4, 1, 5]; % Define the sequence of rows you want
+sequence = [2, 3, 4, 1]; % Define the sequence of rows you want
 peakLoc_limits = peakLoc_bounds(sequence, :);
 
 % Loop over the number of sigmoids to fit
 for j = 1:4
     % 1) Get the first peak
     % Invert the signal to find troughs as peaks
-    [pks, locs, w, p] = findpeaks(-dSOC_dV_to_fit, 'SortStr', 'descend', 'NPeaks', 7);
+    [pks, locs, w, p] = findpeaks(-dSOC_dV_to_fit);
 
     % Combine the peak information into a single matrix for easier processing
     peakInfo = [locs', (p'.^0.9).*(w'.*pks'), p', w', pks'];
+    peakInfo = sortrows(peakInfo, 2, 'descend');
     
     % Filter the peaks based on their locations (1200 to 1800)
     peakLoc_limit = peakLoc_limits(j,:);
@@ -65,8 +58,7 @@ for j = 1:4
 
     % 2) Compute w_initial
     % range = [linspace(0.9, 0.5, 100), linspace(0.5, 0.05, 200)];
-    % range = [linspace(0.99, 0.01, 200)] .^ 1.2;
-    range = 0.995:-0.001:0.005;
+    range = linspace(0.99, 0.01, 100);
 
     U0_adjustment = U0_initial(j);
     counter = 0;
@@ -79,8 +71,8 @@ for j = 1:4
         if ~isnan(V_ref_left) && ~isnan(V_ref_right)
             ref_distance_left = V_peak - V_ref_left;
             ref_distance_right = V_ref_right - V_peak;
-            ref_distance = (V_ref_right - V_ref_left) * 1/2;
-            % ref_distance = 2/3 * min(ref_distance_left, ref_distance_right) + 1/3 * max(ref_distance_left, ref_distance_right);
+            % ref_distance = (V_ref_right - V_ref_left) * 1/2;
+            ref_distance = 2/3 * min(ref_distance_left, ref_distance_right) + 1/3 * max(ref_distance_left, ref_distance_right);
             w = ref_distance * f / log(2/k - 1 + 2*sqrt(1/(k*k) - 1/k));
             w_initial(j) = (w_initial(j) * (i - 1) + w) / i;
     
@@ -100,14 +92,14 @@ for j = 1:4
             w = ref_distance * f / log(2/k - 1 + 2*sqrt(1/(k*k) - 1/k));
             counter = counter + 1;
             w_initial(j) = (w_initial(j) * (i - 1/2 - 1/2 * counter) + w * 1/2) / (i - 1/2 * counter);
-            if counter >= min(length(range) - i, max(1,i*1/3)) break; end
+            if counter >= min(length(range) - i, max(10, i * 2/3)) break; end
 
         elseif ~isnan(V_ref_right)
             ref_distance = V_ref_right - V_peak;
             w = ref_distance * f / log(2/k - 1 + 2*sqrt(1/(k*k) - 1/k));
             counter = counter + 1;
             w_initial(j) = (w_initial(j) * (i - 1/2 - 1/2 * counter) + w * 1/2) / (i - 1/2 * counter);
-            if counter >= min(length(range) - i, max(1,i*1/3)) break; end
+            if counter >= min(length(range) - i, max(10, i * 2/3)) break; end
 
         else
             break;
@@ -115,18 +107,14 @@ for j = 1:4
 
     end
 
-    % % Adjust w_initial for error
-    % w_initial(j) = w_initial(j) * (1 - 0.1*0.5^j);
-
+    % Adjust w_initial for error
+    ww_initial(j) = w_initial(j) / (1 - (0.1)^(j+1));
 
     % Adjust position of U0_initial
     U0_initial(j) = (U0_adjustment*(i) + U0_initial(j)*length(range)/2) / (i+length(range)/2);
 
     % 3) compute Q_initial
-    Q_initial(j) = dSOC_dV_peak * (-4) * w_initial(j)/ f; 
-    if j == 1
-        Q_initial(j) = Q_initial(j) * 2/3;
-    end
+    Q_initial(j) = dSOC_dV_peak * (-4) * w_initial(j) * (1 - (0.1)^(j+1))/ f; 
  
     % 4) Get estimated sigmoid curve
     [Xj, dXj_dU] = individual_reactions(V, U0_initial(j), Q_initial(j), w_initial(j), T); 
@@ -143,23 +131,14 @@ for j = 1:4
     % 5) Subtract the estimated sigmoid from the derivative data to
     % continue estimation of other peaks
     dSOC_dV_to_fit = dSOC_dV_to_fit - dXj_dU;
-
 end
 
-[x, dx_du] = total_reaction([U0_initial(:), Q_initial(:), w_initial(:)]);
-dSOC_dV_to_fit = dSOC_dV - dx_du(V);
-
-figure; plot(V, dSOC_dV_to_fit);
-
 MSMR_parameters = [U0_initial(:), Q_initial(:), w_initial(:)];
-MSMR_parameters = [MSMR_parameters; MSMR_parameters(1,:)];
-
+MSMR_parameters = sortrows(MSMR_parameters, 1);
 disp(MSMR_parameters)
 RMSE = msmrObjective(MSMR_parameters, V, S, real_dSOC_dV, 'dxdu_rmse');
 fprintf('RMSE: %.12f\n', RMSE);
-
 num_reactions = size(MSMR_parameters, 1);
-
 
 %% 2. Generate plots for initial parameters
 [x, dx_du] = total_reaction(MSMR_parameters);
@@ -187,9 +166,6 @@ legend;
 hold off;
 end
 
-
-
-
 %% 3. Use Fmincon to compute accurate parameters
 % Initial guess for MSMR Parameters
 initialParams = MSMR_parameters;  % Assuming MSMR_parameters is your initial guess
@@ -197,12 +173,20 @@ initialParams = MSMR_parameters;  % Assuming MSMR_parameters is your initial gue
 % Set bounds
 A = [];
 b = [];
-A = [zeros(1, 5), ones(1, 5), zeros(1, 5)];
-b = 1;
-Aeq = []; 
-beq = []; 
-lb = [];
-ub = [];
+Aeq = [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0];
+beq = 1;
+% Aeq = []; % Aeq = [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0];
+% beq = []; % beq = 1;
+lb = zeros(size(initialParams)); % Make it positive
+% lb(:,1) = initialParams(:,1) * 0.95;
+% lb = [2.5, 0, 0; 2.5, 0, 0; 2.5, 0, 0; 2.5, 0, 0];
+% lb = [3.1, 0, 0; 3.4, 0, 0; 3.7, 0, 0; 3.95, 0, 0];
+% ub = [];
+ub = Inf(size(initialParams));
+% ub(:,1) = initialParams(:,1) * 1.05;
+% ub(:,1) = initialParams(:,1) * 1.2;
+% ub = [4.2, Inf, Inf; 4.2, Inf, Inf; 4.2, Inf, Inf; 4.2, Inf, Inf];
+% ub = [3.5, Inf, Inf; 3.8, Inf, Inf; 4.05, Inf, Inf; 4.2, Inf, Inf];
 nonlcon = [];
 
 % Set options
@@ -225,16 +209,6 @@ RMSE = msmrObjective(MSMR_parameters, V, S, real_dSOC_dV, 'dxdu_rmse');
 fprintf('RMSE: %.12f\n', RMSE);
 
 
-
-
-
-initialParams = MSMR_parameters;
-[MSMR_parameters, ~] = fmincon(@(p) msmrObjective(p, V, S, real_dSOC_dV, 'dxdu_rmse'), ...
-                            initialParams, A, b, Aeq, beq, lb, ub, nonlcon, options);
-disp('Optimised MSMR Parameters:');
-disp(MSMR_parameters);
-RMSE = msmrObjective(MSMR_parameters, V, S, real_dSOC_dV, 'dxdu_rmse');
-fprintf('RMSE: %.12f\n', RMSE);
 
 
 
@@ -265,8 +239,6 @@ legend;
 hold off;
 
 
-
-
 % reset_path;
 % ModelName = 'OCV_MSMR';
 % Estimator = 'PEM';
@@ -283,9 +255,8 @@ function rmse = msmrObjective(MSMR_parameters, V, S, dSOC_dV, metric)
     % X_rmse = sqrt(mean((X - S).^2)) / abs(mean(S));
     % dX_dU_rmse = sqrt(mean(((dX_dU - dSOC_dV)).^2)) / abs(mean(dSOC_dV));
 
-    X_rmse = sqrt(mean((X - S).^2)) / abs(mean(S));
-    dX_dU_rmse = sqrt(mean(((dX_dU - dSOC_dV)).^2)) / abs(mean(dSOC_dV));
-    dX_dU_cubic = nthroot(mean(abs(dX_dU - dSOC_dV).^3), 3) / abs(mean(dSOC_dV));
+    X_rmse = sqrt(mean((X - S).^2));
+    dX_dU_rmse = sqrt(mean(((dX_dU - dSOC_dV)).^2));
 
     X_MAE = mean(abs(X - S)) / abs(mean(S));
     dX_dU_MAE = mean(abs(dX_dU - dSOC_dV)) / abs(mean(dSOC_dV));
@@ -297,8 +268,6 @@ function rmse = msmrObjective(MSMR_parameters, V, S, dSOC_dV, metric)
         rmse = dX_dU_rmse;
     elseif strcmp(metric, ('dxdu_MAE'))
         rmse = dX_dU_MAE;
-    elseif strcmp(metric, ('dxdu_cubic'))
-        rmse = dX_dU_cubic;
     end
 end
 

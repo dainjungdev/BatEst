@@ -31,7 +31,7 @@ elseif strcmp(ModelName,'RORC')
     end
 elseif strcmp(ModelName,'OCV')
     if strcmp(DataType,'Pseudo-OCV charge')
-        uncert(1:3) = [1;0;0];
+        uncert(1:3) = [1;1;1];
     end
 end
 

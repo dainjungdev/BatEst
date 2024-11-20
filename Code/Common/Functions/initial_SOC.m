@@ -15,5 +15,4 @@ if isa(OCV,'function_handle')
 else
     SOC = fsolve(@(x) UpFun(x,nu,miu)-UnFun(x)-V,SOCest,opts);
 end
-
 end

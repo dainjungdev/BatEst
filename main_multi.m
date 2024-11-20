@@ -5,15 +5,15 @@ reset_path;
 startTime = datetime('now');
 fprintf('\nCode started at %s\n', startTime);
 
-% Initialise optional variables
-if ~exist('Dataset','var'), Dataset = import_parquet('Cell20_RPT4.parquet'); end
+% Initialize optional variables
+if ~exist('Dataset','var'), Dataset = import_parquet('Cell3_RPT0.parquet'); end
 if ~exist('out','var'), out = []; end
 if ~exist('params','var'), params = []; end
-if ~exist('cycle','var'), cycle = 192; end
+if ~exist('cycle','var'), cycle = 0*48; end
 if ~exist('outputPath', 'var'), outputPath = './Output'; end
 
 fprintf('\n-------\nCycle: %d\n', cycle);
-params = load("Cell20_Cycle96_Step3.mat").params;
+% params = load("Cell20_Cycle96_Step3.mat").params;
 
 rep_num = 1:3;
 % Set the section number(s) or number of repetitions
