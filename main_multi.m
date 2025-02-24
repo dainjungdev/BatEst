@@ -6,11 +6,12 @@ startTime = datetime('now');
 fprintf('\nCode started at %s\n', startTime);
 
 % Initialize optional variables
-if ~exist('Dataset','var'), Dataset = import_parquet('Cell3_RPT0.parquet'); end
+if ~exist('Dataset','var'), Dataset = import_parquet('Cell4_RPT0.parquet'); end
 if ~exist('out','var'), out = []; end
 if ~exist('params','var'), params = []; end
 if ~exist('cycle','var'), cycle = 0*48; end
 if ~exist('outputPath', 'var'), outputPath = './Output'; end
+
 
 fprintf('\n-------\nCycle: %d\n', cycle);
 % params = load("Cell20_Cycle96_Step3.mat").params;
@@ -84,6 +85,6 @@ save_output(out, [outputPath '/' fileName '_' num2str(cycle)], true);
 writetable(summary_table, [outputPath '/' fileName '_' num2str(cycle) '.csv']);
 % save_plot(gcf,[outputPath '/' fileName]);
 
-reset_path;
+% reset_path;
 end
 

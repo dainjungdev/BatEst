@@ -115,20 +115,31 @@ end
 % end
 
 
+% Check for missing time points
+if length(tpoints) ~= tpoints(end)-tpoints(1) + 1
+    error('tsol does not contain all time points in the range; there are missing time values.');
+end
+
 % Code for main_multi test
 if strcmp(DataType,'Pseudo-OCV charge') %% Pseudo-OCV(step10) 80000
     target = 1000;
     ds = max(floor(length(tpoints)/target),1);
+    tpoints = tpoints(1:ds:end);
 elseif strcmp(DataType,'Relaxation') %% Relaxation(step5) 3600
     ds = 4;
+    % tpoints = tpoints(1:ds:60, length(tpoints)-ds*60:ds:length(tpoints)]);
+    % ds = 1;
+    tpoints = tpoints(1:ds:end);
 elseif strcmp(DataType,'CCCV charge') %% CCCV(step6) 10000
     ds = 8;
+    tpoints = tpoints(1:ds:end);
 else
     target = 900;
     ds = max(floor(length(tpoints)/target),1);
+    tpoints = tpoints(1:ds:end);
 end
 
-tpoints = tpoints(1:ds:end);
+% tpoints = tpoints(1:ds:end);
 
 
 

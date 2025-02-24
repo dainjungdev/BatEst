@@ -22,7 +22,7 @@ if ~exist('outputPath', 'var'), outputPath = './Output'; end
 % Estimator: choose from the available Methods (Fmincon, PEM)
 
 % Settings
-ModelName = 'OCV_MSMR';
+ModelName = 'OCV';
 Target = 'Parameter';
 Estimator = 'PEM';
 DataType = 'Pseudo-OCV charge';
@@ -77,7 +77,7 @@ save_output(out, [outputPath '/' fileName], true);
 % writetable(summary_table, [outputPath '/' fileName '.csv']);
 % save_plot(gcf,[outputPath '/' fileName]);
 
-reset_path;
+% reset_path;
 
 end
 
