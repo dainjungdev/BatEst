@@ -23,7 +23,7 @@ Rf = 0.01;           % film resistance (Ohm)
 
 % Update capacity
 CE = 1;              % coulombic efficiency (non-dim.)
-Q = Qn/CE;           % effective negative electrode capacity (As)
+Q = Qn*CE;           % effective negative electrode capacity (As)
 
 % Constants
 alph = 0.5;          % charge transfer coefficients (non-dim.)

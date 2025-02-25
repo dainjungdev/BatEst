@@ -17,7 +17,7 @@ C1 = 400;            % capacitance of the RC pair (F)
 
 % Update capacity
 CE = 1;              % coulombic efficiency (non-dim.)
-Q = Qn/CE;           % effective negative electrode capacity (As)
+Q = Qn*CE;           % effective negative electrode capacity (As)
 
 
 %% Compile all parameters into the params structure

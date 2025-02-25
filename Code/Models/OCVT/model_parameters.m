@@ -18,7 +18,7 @@ tauA = 2;            % external heat transfer timescale (s)
 
 % Update capacity
 CE = 1;              % coulombic efficiency (non-dim.)
-Q = Qn/CE;           % effective negative electrode capacity (As)
+Q = Qn*CE;           % effective negative electrode capacity (As)
 
 
 %% Compile all parameters into the params structure

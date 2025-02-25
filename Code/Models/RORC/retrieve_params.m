@@ -16,7 +16,7 @@ p = num2cell(c0.*fac);
 
 % Update reciprocal parameters
 Q = 1/rQ;
-CE = Qn/Q;
+CE = Q/Qn;
 tau1 = 1/rtau;
 C1 = 1/(rCV*Vrng);
 
