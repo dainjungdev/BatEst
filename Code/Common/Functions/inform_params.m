@@ -38,10 +38,10 @@ end
 % Update the effective capacity Q using the measured coulombic efficiency
 if isfield(true_sol,'CE') && isfield(params,'CE')
     CE = true_sol.CE;
-    Q = params.Qn / CE; % edited % edited again
+    Q = params.Qn * CE; % edited % edited again % again
     params = update(params,1,'rQ',1/Q);
     % % Fix the negative electrode capacity Qn
-    % uncert(1) = 0;
+    uncert(1) = 0;
 end
 
 % Update the reference temperature

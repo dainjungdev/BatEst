@@ -6,10 +6,7 @@ function params = add_bounds(params)
 
 % Add upper and lower bounds based on the uncertainty
 ub = c0./(1-min(uncert,0.9));
-lb = c0.*(1-min(uncert,0.9));
-
-% ub = c0.*(1+uncert);
-% lb = c0.*(1-uncert);
+lb = c0.*(1-min(uncert,1));
 
 % Dimensional upper and lower bounds can be computed from:
 % ub*fac and lb*fac, or 1/(lb*fac) and 1/(ub*fac) for reciprocal estimates,
