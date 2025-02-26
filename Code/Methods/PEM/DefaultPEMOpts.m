@@ -9,10 +9,14 @@ EstOpts = nlgreyestOptions('Display','on', ...
                            'SearchMethod','lsqnonlin', ...
                            'EstimateCovariance',true);
 
+% Regularisation
+% EstOpts.Regularization.Lambda = 1;
+% EstOpts.Regularization.Nominal = 'model';
+
 Advanced = optimset('lsqnonlin');
 % Advanced.Algorithm = 'trust-region-reflective';
-Advanced.TolFun = 1e-9;
-Advanced.TolX = 1e-12;
+Advanced.TolFun = 1e-12;
+Advanced.TolX = 1e-4;
 Advanced.MaxIter = 100;
 
 EstOpts.SearchOptions.Advanced = Advanced;
@@ -21,6 +25,6 @@ EstOpts.SearchOptions.FunctionTolerance = Advanced.TolFun;
 EstOpts.SearchOptions.StepTolerance = Advanced.TolX;
 EstOpts.SearchOptions.MaxIterations = Advanced.MaxIter;
 
-EstOpts.GradientOptions.MinDifference = 1e-6;
+EstOpts.GradientOptions.MinDifference = 1e-4;
 
 end

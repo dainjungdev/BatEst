@@ -6,14 +6,14 @@ startTime = datetime('now');
 fprintf('\nCode started at %s\n', startTime);
 
 % Initialize optional variables
-if ~exist('Dataset','var'), Dataset = import_parquet('Cell8_RPT5.parquet'); end
+if ~exist('Dataset','var'), Dataset = import_parquet('Cell3_RPT0.parquet'); end
 if ~exist('out','var'), out = []; end
 if ~exist('params','var'), params = []; end
 if ~exist('cycle','var'), cycle = 5*48; end
 if ~exist('outputPath', 'var'), outputPath = './Output'; end
 
 
-fprintf('\n-------\nCycle: %d\n', cycle);
+fprintf('\n-------\nCycle: %dddia\n', cycle);
 % params = load("Cell20_Cycle96_Step3.mat").params;
 
 rep_num = 1:3;

@@ -8,6 +8,9 @@ function params = add_bounds(params)
 ub = c0./(1-min(uncert,0.9));
 lb = c0.*(1-min(uncert,0.9));
 
+% UPPER LIMIT FOR Q
+lb(1) = max(0.5, lb(1));
+
 % Dimensional upper and lower bounds can be computed from:
 % ub*fac and lb*fac, or 1/(lb*fac) and 1/(ub*fac) for reciprocal estimates,
 % where fac = 2*guess.

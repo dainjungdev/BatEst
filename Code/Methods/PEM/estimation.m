@@ -59,8 +59,15 @@ for step = 1
     % Estimate the model parameters and initial states
     runtic = tic;
     sys = pem(data,init_sys,EstOpts);
-    disp(sys.Report.Fit.LossFcn);
-    disp(sys.Report.Termination.WhyStop);
+
+    % Display key optimization results
+    fprintf('\n***** PEM Optimization Results *****\n');
+    fprintf('* Loss Function Value:      %.6e\n', sys.Report.Fit.LossFcn);
+    fprintf('* Termination Reason:       %s\n', sys.Report.Termination.WhyStop);
+    fprintf('* First Order Optimality:   %.6e\n', sys.Report.Termination.FirstOrderOptimality);
+    fprintf('* Function Evaluation Count: %d\n', sys.Report.Termination.FcnCount);
+    fprintf('************************************\n\n');
+
     X0 = sys.Report.Parameters.X0; %findstates(sys,data);
     toc(runtic);
     
