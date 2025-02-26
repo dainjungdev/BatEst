@@ -9,7 +9,13 @@ ub = c0./(1-min(uncert,0.9));
 lb = c0.*(1-min(uncert,0.9));
 
 % UPPER LIMIT FOR Q
-lb(1) = max(0.5, lb(1));
+if isfield(params, 'initialQ') && params.initialQ
+    params.initialQ = false;
+else
+    lb(1) = max(0.5, lb(1));
+end
+
+
 
 % Dimensional upper and lower bounds can be computed from:
 % ub*fac and lb*fac, or 1/(lb*fac) and 1/(ub*fac) for reciprocal estimates,

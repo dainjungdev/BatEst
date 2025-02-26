@@ -3,7 +3,7 @@ function params = cell_parameters(j)
 % store them in a structure.
 
 % Set the nominal capacity and rate parameters
-Qnom = 3;       % nominal capacity (Ah)
+Qnom = 2.9;       % nominal capacity (Ah)
 % Note that Qnom can be different from the theoretical capacity and is only
 % used to determine the nominal C-rate (=Qnom).
 Crate = Qnom;     % nominal 1C current density (A)

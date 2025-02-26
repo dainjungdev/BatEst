@@ -16,7 +16,7 @@ EstOpts = nlgreyestOptions('Display','on', ...
 Advanced = optimset('lsqnonlin');
 % Advanced.Algorithm = 'trust-region-reflective';
 Advanced.TolFun = 1e-12;
-Advanced.TolX = 1e-4;
+Advanced.TolX = 1e-5;
 Advanced.MaxIter = 100;
 
 EstOpts.SearchOptions.Advanced = Advanced;
