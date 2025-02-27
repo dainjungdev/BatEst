@@ -5,8 +5,8 @@ function params = code_switches(params)
 verbose = true;
 
 % Choose whether to plot the results and/or the model functions
-plot_results = true;
-plot_model = true;
+plot_results = false;
+plot_model = false;
 
 % Choose whether to approximate the model functions as polynomials
 polyapprox = false;

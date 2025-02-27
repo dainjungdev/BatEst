@@ -40,15 +40,20 @@ end
 % PEM options
 [SimOpts, EstOpts] = DefaultPEMOpts;
 
-% Options for main_multi
-if strcmp(DataType,'Pseudo-OCV charge')
-    EstOpts.SearchOptions.StepTolerance = 1e-6;
-    EstOpts.SearchOptions.FunctionTolerance = 1e-12;
-elseif strcmp(DataType,'Relaxation')
-elseif strcmp(DataType,'CCCV charge')
-    EstOpts.SearchOptions.StepTolerance = 1e-4;
-    EstOpts.SearchOptions.FunctionTolerance = 1e-14;
-end
+% % Options for main_multi
+% if strcmp(DataType,'Pseudo-OCV charge')
+%     EstOpts.SearchOptions.StepTolerance = 1e-6;
+%     EstOpts.SearchOptions.FunctionTolerance = 1e-12;
+% elseif strcmp(DataType,'Relaxation')
+% elseif strcmp(DataType,'CCCV charge')
+%     EstOpts.SearchOptions.StepTolerance = 1e-4;
+%     EstOpts.SearchOptions.FunctionTolerance = 1e-14;
+% end
+
+% if strcmp(DataType, 'CCCV charge')
+%     EstOpts.SearchOptions.Advanced.TolX = 1e-3;
+%     EstOpts.SearchOptions.StepTolerance = 1e-3;
+% end
 
 if ~verbose
     EstOpts.Display = 'off';

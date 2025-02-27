@@ -2,14 +2,17 @@ function [out, params] = main_multi(Dataset, out, params, cycle, outputPath)
 
 close all;
 reset_path;
+fprintf('\n************************************\n');
 startTime = datetime('now');
 fprintf('\nCode started at %s\n', startTime);
 
+
+cell_num=20; rpt_num=7;
 % Initialize optional variables
-if ~exist('Dataset','var'), Dataset = import_parquet('Cell15_RPT2.parquet'); end
+if ~exist('Dataset','var'), Dataset = import_parquet(['Cell' num2str(cell_num) '_RPT' num2str(rpt_num) '.parquet']); end
 if ~exist('out','var'), out = []; end
 if ~exist('params','var'), params = []; end
-if ~exist('cycle','var'), cycle = 2*48; end
+if ~exist('cycle','var'), cycle = rpt_num*48; end
 if ~exist('outputPath', 'var'), outputPath = './Output'; end
 
 
@@ -36,6 +39,8 @@ for j = rep_num
 
     Target = 'Parameter';
     Estimator = 'PEM';
+    fprintf('\n------------------------------------\n');
+    fprintf('Cycle: %d, Rep: %d\n', cycle, j);
 
     addpath(genpath(strcat('./BatEst/Code/Models/', ModelName)));
     addpath(genpath(strcat('./BatEst/Code/Methods/', Estimator)));
