@@ -134,6 +134,8 @@ if contains(DataType,'charge') && ~contains(DataType,'OCV')
     X_input = X_end-X_init;
     sol.CE = QT/(X_input*Q); % coulombic efficiency
     if verbose
+        disp(['QT: ' num2str(QT) ' / X_init: ' num2str(X_init) ' / X_end: ' num2str(X_end)])
+        disp(['V_init: ' num2str(V_init) ' / S_init: ' num2str(S_init) ' / V_end: ' num2str(V_end)])
         disp(['Coulombic efficiency of ' num2str(sol.CE)]);
     end
 elseif strcmp(DataType,'Relaxation')

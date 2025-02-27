@@ -13,12 +13,12 @@ function [Model, params] = set_model(ModelName,params,j)
 % the output y = [(V-Vcut)/Vrng].
 
 % Unpack parameters
-[Q, nu, miu, Um, Vrng, Vcut, OCV, Tm, S0] = ...
-    struct2array(params, {'Q','nu','miu',...
+[Qn, nu, miu, Um, Vrng, Vcut, OCV, Tm, S0] = ...
+    struct2array(params, {'Qn','nu','miu',...
                           'Um','Vrng','Vcut','OCV','Tm','S0'});
 
 % Define an initial guess and uncertainty for each unknown parameter
-guess = [1/Q; nu; miu];
+guess = [1/Qn; nu; miu];
 uncert = [0.1; 0.1; 0.1];
 
 % Set the rescaling factor and scale the initial guesses

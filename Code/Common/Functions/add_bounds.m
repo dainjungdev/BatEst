@@ -11,8 +11,8 @@ lb = c0.*(1-min(uncert,0.9));
 % UPPER LIMIT FOR Q
 if isfield(params, 'initialQ') && params.initialQ
     params.initialQ = false;
-else
-    lb(1) = max(0.5, lb(1));
+elseif uncert(1) ~= 0
+    lb(1) = c0(1);
 end
 
 

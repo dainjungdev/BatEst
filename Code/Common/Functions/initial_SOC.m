@@ -8,11 +8,20 @@ function SOC = initial_SOC(params,V,SOCest)
 [nu, miu, UpFun, UnFun, OCV] = ...
     struct2array(params, {'nu','miu','UpFun','UnFun','OCV'});
 
-% Estimate the equilibrium SOC corresponding to the given voltage
-opts = optimoptions('fsolve','Display','off');
+% Define the function to solve
 if isa(OCV,'function_handle')
-    SOC = fsolve(@(x) OCV(x,nu,miu)-V,SOCest,opts);
+    eqn = @(x) OCV(x,nu,miu) - V;
 else
-    SOC = fsolve(@(x) UpFun(x,nu,miu)-UnFun(x)-V,SOCest,opts);
+    eqn = @(x) UpFun(x,nu,miu) - UnFun(x) - V;
+end
+
+% Estimate the equilibrium SOC corresponding to the given voltage
+opts = optimoptions('fsolve', 'Algorithm', 'trust-region-dogleg', 'Display', 'off');
+[SOC, ~, exitflag] = fsolve(eqn, SOCest, opts);
+
+% Retry with 'levenberg-marquardt' if needed
+if exitflag <= 0
+    opts.Algorithm = 'levenberg-marquardt';
+    SOC = fsolve(eqn, SOCest, opts);
 end
 end

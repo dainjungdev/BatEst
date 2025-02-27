@@ -6,10 +6,10 @@ startTime = datetime('now');
 fprintf('\nCode started at %s\n', startTime);
 
 % Initialize optional variables
-if ~exist('Dataset','var'), Dataset = import_parquet('Cell8_RPT5.parquet'); end
+if ~exist('Dataset','var'), Dataset = import_parquet('Cell15_RPT2.parquet'); end
 if ~exist('out','var'), out = []; end
 if ~exist('params','var'), params = []; end
-if ~exist('cycle','var'), cycle = 0*48; end
+if ~exist('cycle','var'), cycle = 2*48; end
 if ~exist('outputPath', 'var'), outputPath = './Output'; end
 
 
