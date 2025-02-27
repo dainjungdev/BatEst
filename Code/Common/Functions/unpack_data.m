@@ -6,10 +6,10 @@ function sol = unpack_data(data,params,j)
 % saved within the 'sol' structure. The vectors must be column vectors.
 
 % Unpack parameters
-[Um, Vcut, Vrng, TtoK, CtoK, Trng, Tamb, X0, Q, cycle_step, DataType, ...
+[Um, Vcut, Vrng, TtoK, CtoK, Trng, Tamb, X0, Q, Qn, cycle_step, DataType, ...
     verbose] = ...
     struct2array(params,{'Um','Vcut','Vrng','TtoK','CtoK','Trng','Tamb', ...
-                         'X0','Q','cycle_step','DataType','verbose'});
+                         'X0','Q','Qn','cycle_step','DataType','verbose'});
 if ~any(Trng)
     [TtoK, CtoK, Trng] = deal(1); % no scaling
 end
@@ -51,7 +51,25 @@ end
 % Optional down-sampling to reduce the number of datapoints
 target = 900;
 ds = max(floor(length(tpoints)/target),1);
+
+
+
+% Code for main_multi test
+if strcmp(DataType,'Pseudo-OCV charge') %% Pseudo-OCV(step10) 80000
+    ds = 200;
+elseif strcmp(DataType,'Relaxation') %% Relaxation(step5) 3601
+    ds = 20;
+elseif strcmp(DataType,'CCCV charge') %% CCCV(step6) 10000
+    ds = 10;
+else
+    ds = 10;
+end
+
+
+
+
 tpoints = tpoints(1:ds:end);
+
 
 % Unpack data from table
 tsol(:,1) = data.Test_Time_s(tpoints)-data.Test_Time_s(tpoints(1));
@@ -132,7 +150,7 @@ if contains(DataType,'charge') && ~contains(DataType,'OCV')
     V_end = data.Voltage_V(relax_end);
     X_end = initial_SOC(params,V_end,0.9);
     X_input = X_end-X_init;
-    sol.CE = QT/(X_input*Q); % coulombic efficiency
+    sol.CE = QT/(X_input*Qn); % coulombic efficiency
     if verbose
         disp(['QT: ' num2str(QT) ' / X_init: ' num2str(X_init) ' / X_end: ' num2str(X_end)])
         disp(['V_init: ' num2str(V_init) ' / S_init: ' num2str(S_init) ' / V_end: ' num2str(V_end)])

@@ -16,7 +16,7 @@ if any(strcmp(ModelName,{'EHM','EHMT'}))
     if strcmp(DataType,'Relaxation')  % diffusion coefficient
         uncert(1:8) = [0; 1; 0; 0; 0; 0; 0; 0];
     elseif strcmp(DataType,'CCCV charge')  % dynamic parameters(Q, b, In, Rf)
-        uncert(1:8) = [0.1; 0; 0; 0; 1; 0; 0; 0.1];
+        uncert(1:8) = [1; 0; 0; 0; 1; 0; 0; 1];
     elseif strcmp(DataType,'Cycling')
         uncert(1:8) = [0.03; 0; 0.03; 0; 0.03; 0.03; 0.03; 0.03];
         % uncert(1:8) = [0.1; 0.1; 0.1; 0; 0.1; 0.1; 0.1; 0.1];
@@ -31,7 +31,7 @@ elseif strcmp(ModelName,'RORC')
     end
 elseif strcmp(ModelName,'OCV')
     if strcmp(DataType,'Pseudo-OCV charge')
-        uncert(1:3) = [0.1;0.1;0.1];
+        uncert(1:3) = [1;1;1];
     end
 end
 
@@ -40,7 +40,7 @@ if isfield(true_sol,'CE') && isfield(params,'CE')
     CE = true_sol.CE;
     Q = params.Qn * CE; % edited % edited again % again
     params = update(params,1,'rQ',1/Q);
-    % % Fix the negative electrode capacity Qn
+    % Fix the negative electrode capacity Qn
     uncert(1) = 0;
 end
 
