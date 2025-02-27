@@ -9,9 +9,7 @@ ub = c0./(1-min(uncert,0.9));
 lb = c0.*(1-min(uncert,0.9));
 
 % UPPER LIMIT FOR Q
-if isfield(params, 'initialQ') && params.initialQ
-    params.initialQ = false;
-elseif uncert(1) ~= 0
+if uncert(1) ~= 0
     lb(1) = c0(1);
 end
 

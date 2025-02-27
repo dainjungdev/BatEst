@@ -2,9 +2,9 @@ function sol = estimation(Mass,dxdt,yeqn,params)
 % Perform state/parameter estimation using PEM.
 
 % Unpack parameters
-[X0, tt, U, yn, c0, c_ind, lb, ub, fiX, verbose] = ...
+[X0, tt, U, yn, c0, c_ind, lb, ub, fiX, verbose, DataType] = ...
     struct2array(params, {'X0','tt','U','yy','c0','c_ind','lb','ub', ...
-                          'fiX','verbose'});
+                          'fiX','verbose','DataType'});
 
 if ~any(yn)
     error('PEM is only able to estimate parameters from data.');
@@ -39,6 +39,17 @@ end
 
 % PEM options
 [SimOpts, EstOpts] = DefaultPEMOpts;
+
+% Options for main_multi
+if strcmp(DataType,'Pseudo-OCV charge')
+    EstOpts.SearchOptions.StepTolerance = 1e-6;
+    EstOpts.SearchOptions.FunctionTolerance = 1e-12;
+elseif strcmp(DataType,'Relaxation')
+elseif strcmp(DataType,'CCCV charge')
+    EstOpts.SearchOptions.StepTolerance = 1e-4;
+    EstOpts.SearchOptions.FunctionTolerance = 1e-14;
+end
+
 if ~verbose
     EstOpts.Display = 'off';
 end
