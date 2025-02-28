@@ -7,7 +7,7 @@ startTime = datetime('now');
 fprintf('\nCode started at %s\n', startTime);
 
 
-cell_num=20; rpt_num=7;
+cell_num=18; rpt_num=9;
 % Initialize optional variables
 if ~exist('Dataset','var'), Dataset = import_parquet(['Cell' num2str(cell_num) '_RPT' num2str(rpt_num) '.parquet']); end
 if ~exist('out','var'), out = []; end
